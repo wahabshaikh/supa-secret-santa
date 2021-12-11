@@ -137,13 +137,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { user } = await supabase.auth.api.getUserByCookie(req);
 
   if (!user) {
-    return {
-      props: {},
-      redirect: { destination: "/login", permanent: "false" },
-    };
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
   return { props: { user } };
 };
-
 export default Profile;
