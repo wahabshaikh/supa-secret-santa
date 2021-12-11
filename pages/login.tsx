@@ -1,13 +1,13 @@
 import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 
-const Home: NextPage = () => {
+const Login: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Supa Sceret Santa</title>
+        <title>Login | Supa Sceret Santa</title>
       </Head>
-      <h1 className="text-3xl font-bold underline">Home</h1>
+      <h1 className="text-3xl font-bold underline">Login</h1>
     </>
   );
 };
@@ -16,4 +16,4 @@ export const getStaticProps: GetStaticProps = async () => {
   return { props: { withoutLayout: true } };
 };
 
-export default Home;
+export default Login;
