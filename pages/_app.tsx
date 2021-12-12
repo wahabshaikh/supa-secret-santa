@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import supabase from "../lib/supabase";
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { Toaster } from "react-hot-toast";
 
 export default function CustomApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function CustomApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </Layout>
       )}
+      <Toaster />
     </>
   );
 }
