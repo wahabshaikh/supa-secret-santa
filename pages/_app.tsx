@@ -2,13 +2,29 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Layout from "../components/Layout";
 import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { Router, useRouter } from "next/router";
 import supabase from "../lib/supabase";
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { Toaster } from "react-hot-toast";
+import ProgressBar from "@badrap/bar-of-progress";
 
 export default function CustomApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
+
+  // Progress bar
+  const progress = new ProgressBar({
+    size: 5,
+    color: "red",
+    className: "bar-of-progress",
+    delay: 100,
+  });
+
+  Router.events.on("routeChangeStart", progress.start);
+  Router.events.on("routeChangeComplete", () => {
+    progress.finish();
+    window.scrollTo(0, 0);
+  });
+  Router.events.on("routeChangeError", progress.finish);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(

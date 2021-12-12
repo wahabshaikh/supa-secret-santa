@@ -10,6 +10,7 @@
     "generate": "yarn prisma generate"
   },
   "dependencies": {
+    "@badrap/bar-of-progress": "^0.1.2",
     "@headlessui/react": "^1.4.2",
     "@heroicons/react": "^1.0.5",
     "@prisma/client": "^3.6.0",
