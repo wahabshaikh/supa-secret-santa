@@ -1,6 +1,9 @@
-import { Dispatch, FC, Fragment, SetStateAction } from "react";
+import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
+import { Tag } from "@prisma/client";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const team = [
   {
@@ -41,11 +44,27 @@ const team = [
 ];
 
 interface CreateRoomOverlayProps {
+  creatorId: string;
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({ open, setOpen }) => {
+const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
+  creatorId,
+  open,
+  setOpen,
+}) => {
+  const [name, setName] = useState("");
+  const [tag, setTag] = useState<Tag>("FAMILY");
+
+  async function createRoom() {
+    await toast.promise(axios.post("/api/room", { creatorId, name, tag }), {
+      loading: "Creating a room...",
+      success: (response) => response.data.message,
+      error: (error) => error.toString(),
+    });
+  }
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -67,7 +86,13 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({ open, setOpen }) => {
               leaveTo="translate-x-full"
             >
               <div className="w-screen max-w-md">
-                <form className="h-full divide-y divide-gray-200 flex flex-col bg-white shadow-xl">
+                <form
+                  className="h-full divide-y divide-gray-200 flex flex-col bg-white shadow-xl"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    createRoom();
+                  }}
+                >
                   <div className="flex-1 h-0 overflow-y-auto">
                     <div className="py-6 px-4 bg-indigo-700 sm:px-6">
                       <div className="flex items-center justify-between">
@@ -97,7 +122,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({ open, setOpen }) => {
                         <div className="space-y-6 pt-6 pb-5">
                           <div>
                             <label
-                              htmlFor="room-name"
+                              htmlFor="name"
                               className="block text-sm font-medium text-gray-900"
                             >
                               Room name
@@ -105,10 +130,38 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({ open, setOpen }) => {
                             <div className="mt-1">
                               <input
                                 type="text"
-                                name="room-name"
-                                id="room-name"
+                                name="name"
+                                id="name"
                                 className="block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                                value={name}
+                                onChange={(event) =>
+                                  setName(event.target.value)
+                                }
+                                required
                               />
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="tag"
+                              className="block text-sm font-medium text-gray-700"
+                            >
+                              Room tag
+                            </label>
+                            <div className="mt-1">
+                              <select
+                                id="tag"
+                                name="tag"
+                                className="block w-full sm:text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                                value={tag}
+                                onChange={(event) =>
+                                  setTag(event.target.value as Tag)
+                                }
+                              >
+                                <option value="FAMILY">Family</option>
+                                <option value="FRIENDS">Friends</option>
+                                <option value="COWORKERS">Coworkers</option>
+                              </select>
                             </div>
                           </div>
                         </div>

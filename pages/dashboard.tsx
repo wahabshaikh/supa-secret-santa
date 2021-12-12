@@ -183,7 +183,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
           ))}
         </ul>
       </div>
-      <CreateRoomOverlay open={open} setOpen={setOpen} />
+      <CreateRoomOverlay creatorId={user.id} open={open} setOpen={setOpen} />
     </>
   );
 };
