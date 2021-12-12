@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
+  id           String         @id @default(uuid())
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   avatarUrl    String
@@ -35,14 +35,14 @@ model Room {
   name      String
   tag       Tag
   creator   User           @relation(fields: [creatorId], references: [id])
-  creatorId Int
+  creatorId String
   members   UsersInRooms[]
   wishes    Wish[]
 }
 
 model UsersInRooms {
   user       User     @relation(fields: [userId], references: [id])
-  userId     Int
+  userId     String
   room       Room     @relation(fields: [roomId], references: [id])
   roomId     Int
   isApproved Boolean  @default(false)
@@ -59,9 +59,9 @@ model Wish {
   roomId     Int
   giftName   String
   giftee     User     @relation(name: "giftee", fields: [gifteeId], references: [id])
-  gifteeId   Int
+  gifteeId   String
   santa      User?    @relation(name: "santa", fields: [santaId], references: [id])
-  santaId    Int?
+  santaId    String?
   isSecret   Boolean  @default(true)
 }
 
