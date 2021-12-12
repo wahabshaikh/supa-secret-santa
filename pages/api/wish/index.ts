@@ -12,22 +12,22 @@ export default async function handler(
   switch (method) {
     case "POST":
       try {
-        const { creatorId, name, tag } = body;
+        const { roomId, gifteeId, giftName } = body;
 
-        await prisma.room.create({
+        await prisma.wish.create({
           data: {
-            name,
-            tag,
-            creatorId,
+            roomId: parseInt(roomId),
+            gifteeId,
+            giftName,
           },
         });
 
-        res.status(200).json({ message: `Successfully created the room` });
+        res.status(200).json({ message: `Successfully created the wish` });
       } catch (error: any) {
         console.error(error);
         res
           .status(500)
-          .json({ message: `Error creating the room: ${error.message}` });
+          .json({ message: `Error creating the wish: ${error.message}` });
       }
       break;
 

@@ -1,19 +1,16 @@
+import { Room, Wish } from "@prisma/client";
 import { User } from "@supabase/supabase-js";
+import axios from "axios";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import supabase from "../../lib/supabase";
 
 interface IRoom {
   user: User;
 }
-
-const wishes = [
-  { id: 1, gift: "lorem" },
-  { id: 1, gift: "ipsum" },
-  { id: 1, gift: "dolor" },
-  { id: 1, gift: "emit" },
-];
 
 const members = [
   {
@@ -46,6 +43,37 @@ const Room: NextPage<IRoom> = ({ user }) => {
   const router = useRouter();
   const { id } = router.query;
 
+  const [wish, setWish] = useState("");
+  const [wishes, setWishes] = useState<Wish[]>([]);
+
+  useEffect(() => {
+    getWishes();
+  }, []);
+
+  async function createWish() {
+    await toast.promise(
+      axios.post("/api/wish", {
+        roomId: id,
+        gifteeId: user.id,
+        giftName: wish,
+      }),
+      {
+        loading: "Creating a wish...",
+        success: (response) => response.data.message,
+        error: (error) => error.toString(),
+      }
+    );
+  }
+
+  async function getWishes() {
+    const { data } = (await supabase
+      .from("Wish")
+      .select()
+      .filter("roomId", "eq", id)) as { data: Wish[] };
+
+    setWishes(data);
+  }
+
   return (
     <>
       <Head>
@@ -55,7 +83,7 @@ const Room: NextPage<IRoom> = ({ user }) => {
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 md:text-3xl md:truncate">
-            Back End Developer
+            Room {id}
           </h2>
         </div>
         <div className="mt-4 md:mt-0">
@@ -73,18 +101,26 @@ const Room: NextPage<IRoom> = ({ user }) => {
           {/* Create Wish */}
           <div className="bg-white shadow md:rounded-lg">
             <div className="px-4 py-5 md:p-6">
-              <form className="mt-5 md:flex md:items-center">
+              <form
+                className="mt-5 md:flex md:items-center"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  createWish();
+                }}
+              >
                 <div className="w-full">
                   <label htmlFor="email" className="sr-only">
                     Wish
                   </label>
                   <input
-                    type="email"
-                    name="email"
-                    id="email"
+                    type="text"
+                    name="wish"
+                    id="wish"
                     className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full md:text-sm border-gray-300 rounded-md"
                     placeholder="Enter your wish..."
                     required
+                    value={wish}
+                    onChange={(event) => setWish(event.target.value)}
                   />
                 </div>
                 <button
@@ -102,7 +138,7 @@ const Room: NextPage<IRoom> = ({ user }) => {
             {wishes.map((wish) => (
               <li key={wish.id} className="bg-white shadow md:rounded-lg">
                 <div className="md:flex md:justify-between md:items-center px-4 py-5 md:p-6">
-                  <p className="flex-1">{wish.gift}</p>
+                  <p className="flex-1">{wish.giftName}</p>
                   <button
                     type="submit"
                     className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
