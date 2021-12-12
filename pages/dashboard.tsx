@@ -189,10 +189,18 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  // Check for authenticated user
   const { user } = await supabase.auth.api.getUserByCookie(req);
-
   if (!user) {
     return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  // Check if new user
+  const profile = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+  if (!profile) {
+    return { redirect: { destination: "/profile", permanent: false } };
   }
 
   return { props: { user } };
