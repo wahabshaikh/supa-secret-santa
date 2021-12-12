@@ -22,7 +22,7 @@ model User {
   street       String
   city         String
   region       String
-  pinCode      String
+  postalCode   String
   createdRooms Room[]
   invitedRooms UsersInRooms[]
   giftees      Wish[]         @relation("giftee")

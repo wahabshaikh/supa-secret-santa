@@ -1,11 +1,15 @@
-import { User } from "@supabase/supabase-js";
+import { User } from "@prisma/client";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import Input from "../components/Input";
 import Select from "../components/Select";
+import prisma from "../lib/prisma";
 import supabase from "../lib/supabase";
 import countries from "../data/countries.json";
+import Button from "../components/Button";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 type Inputs = {
   avatarUrl: string;
@@ -19,13 +23,27 @@ type Inputs = {
 };
 
 interface IProfile {
-  user: User;
+  profile: string;
 }
 
-const Profile: NextPage<IProfile> = ({ user }) => {
-  const methods = useForm<Inputs>();
+const Profile: NextPage<IProfile> = ({ profile }) => {
+  const { id, email, ...defaultValues } = JSON.parse(profile) as User;
+  const methods = useForm<Inputs>({
+    defaultValues,
+  });
 
-  const submitHandler: SubmitHandler<Inputs> = (data) => console.log(data);
+  const submitHandler: SubmitHandler<Inputs> = (data) => createProfile(data);
+
+  async function createProfile(data: Inputs) {
+    await toast.promise(axios.post("/api/profile", { id, email, ...data }), {
+      loading: "Creating your profile...",
+      success: (response) => response.data.message,
+      error: (error) => error.toString(),
+    });
+  }
+
+  const firstName = methods.watch("firstName");
+  const avatarUrl = methods.watch("avatarUrl");
 
   return (
     <>
@@ -54,13 +72,17 @@ const Profile: NextPage<IProfile> = ({ user }) => {
                 <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                   <div className="sm:col-span-6 flex items-center">
                     <span className="h-12 w-12 rounded-full overflow-hidden bg-gray-100">
-                      <svg
-                        className="h-full w-full text-gray-300"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={firstName} />
+                      ) : (
+                        <svg
+                          className="h-full w-full text-gray-300"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      )}
                     </span>
                     <div className="ml-4 flex-1">
                       <Input label="Avatar URL" name="avatarUrl" />
@@ -88,7 +110,7 @@ const Profile: NextPage<IProfile> = ({ user }) => {
                       label="Email"
                       name="email"
                       type="email"
-                      defaultValue={user.email}
+                      defaultValue={email}
                       readOnly
                     />
                   </div>
@@ -110,8 +132,8 @@ const Profile: NextPage<IProfile> = ({ user }) => {
                     <Select
                       label="Country"
                       name="country"
-                      options={countries}
                       autoComplete="country-name"
+                      options={countries}
                     />
                   </div>
 
@@ -152,12 +174,7 @@ const Profile: NextPage<IProfile> = ({ user }) => {
 
             <div className="pt-5">
               <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Save
-                </button>
+                <Button type="submit">Save</Button>
               </div>
             </div>
           </form>
@@ -168,12 +185,21 @@ const Profile: NextPage<IProfile> = ({ user }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  // Check for authenticated user
   const { user } = await supabase.auth.api.getUserByCookie(req);
-
   if (!user) {
     return { redirect: { destination: "/login", permanent: false } };
   }
 
-  return { props: { user } };
+  // Get profile information
+  const profile = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+
+  return {
+    props: {
+      profile: JSON.stringify({ ...profile, id: user.id, email: user.email }),
+    },
+  };
 };
 export default Profile;
