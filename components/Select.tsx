@@ -1,4 +1,5 @@
 import { FC, SelectHTMLAttributes } from "react";
+import { useFormContext } from "react-hook-form";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
@@ -7,6 +8,8 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const Select: FC<SelectProps> = ({ label, name, options, ...props }) => {
+  const { register } = useFormContext();
+
   return (
     <>
       <label htmlFor={name} className="block text-sm font-medium text-gray-700">
@@ -15,9 +18,8 @@ const Select: FC<SelectProps> = ({ label, name, options, ...props }) => {
       <div className="mt-1">
         <select
           id={name}
-          name={name}
+          {...register(name)}
           className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-          autoComplete={props.autoComplete || name}
           {...props}
         >
           {options.map((option) => (
