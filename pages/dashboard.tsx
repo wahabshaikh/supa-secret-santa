@@ -1,3 +1,4 @@
+import { Room } from "@prisma/client";
 import { User } from "@supabase/supabase-js";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
@@ -5,94 +6,7 @@ import supabase from "../lib/supabase";
 import { CalendarIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import Link from "next/link";
 import CreateRoomOverlay from "../components/CreateRoomOverlay";
-import { useState } from "react";
-
-const rooms = [
-  {
-    id: 1,
-    title: "Room 1",
-    tag: "Family",
-    createdAt: "December 12, 2021",
-    members: [
-      {
-        name: "Emily Selman",
-        email: "emilyselman@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Kristin Watson",
-        email: "kristinwatson@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Emma Dorsey",
-        email: "emmadorsey@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Floyd Miles",
-        email: "floydmiles@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "Room 2",
-    tag: "Friends",
-    createdAt: "December 13, 2021",
-    members: [
-      {
-        name: "Kristin Watson",
-        email: "kristinwatson@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Emma Dorsey",
-        email: "emmadorsey@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Floyd Miles",
-        email: "floydmiles@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: "Room 3",
-    tag: "Coworkers",
-    createdAt: "December 14, 2021",
-    members: [
-      {
-        name: "Emily Selman",
-        email: "emilyselman@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Kristin Watson",
-        email: "kristinwatson@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-      {
-        name: "Emma Dorsey",
-        email: "emmadorsey@example.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      },
-    ],
-  },
-];
+import { useEffect, useState } from "react";
 
 interface IDashboard {
   user: User;
@@ -100,6 +14,30 @@ interface IDashboard {
 
 const Dashboard: NextPage<IDashboard> = ({ user }) => {
   const [open, setOpen] = useState(false);
+  const [rooms, setRooms] = useState<Room[]>([]);
+
+  useEffect(() => {
+    fetchRooms();
+
+    // // Not working for some reason
+    // const mySubscription = supabase
+    //   .from("Room")
+    //   .on("*", () => fetchRooms())
+    //   .subscribe();
+
+    // return () => {
+    //   supabase.removeSubscription(mySubscription);
+    // };
+  }, []);
+
+  async function fetchRooms() {
+    const { data } = (await supabase
+      .from("Room")
+      .select()
+      .filter("creatorId", "eq", user.id)) as { data: Room[] };
+
+    setRooms(data);
+  }
 
   return (
     <>
@@ -136,7 +74,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
                       <div className="truncate">
                         <div className="flex text-sm">
                           <p className="font-medium text-indigo-600 truncate">
-                            {room.title}
+                            {room.name}
                           </p>
                           <p className="ml-1 flex-shrink-0 font-normal text-gray-500">
                             of {room.tag}
@@ -150,23 +88,21 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
                             />
                             <p>
                               Created on{" "}
-                              <time dateTime={room.createdAt}>
-                                {room.createdAt}
-                              </time>
+                              {new Date(room.createdAt).toDateString()}
                             </p>
                           </div>
                         </div>
                       </div>
                       <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
                         <div className="flex overflow-hidden -space-x-1">
-                          {room.members.map((applicant) => (
+                          {/* {room.members.map((applicant) => (
                             <img
                               key={applicant.email}
                               className="inline-block h-6 w-6 rounded-full ring-2 ring-white"
                               src={applicant.imageUrl}
                               alt={applicant.name}
                             />
-                          ))}
+                          ))} */}
                         </div>
                       </div>
                     </div>
