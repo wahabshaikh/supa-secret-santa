@@ -9,3 +9,64 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           Int            @id @default(autoincrement())
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  avatarUrl    String
+  firstName    String
+  lastName     String
+  email        String         @unique
+  country      String
+  street       String
+  city         String
+  region       String
+  pinCode      String
+  createdRooms Room[]
+  invitedRooms UsersInRooms[]
+  giftees      Wish[]         @relation("giftee")
+  santas       Wish[]         @relation("santa")
+}
+
+model Room {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  name      String
+  tag       Tag
+  creator   User           @relation(fields: [creatorId], references: [id])
+  creatorId Int
+  members   UsersInRooms[]
+  wishes    Wish[]
+}
+
+model UsersInRooms {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  room       Room     @relation(fields: [roomId], references: [id])
+  roomId     Int
+  isApproved Boolean  @default(false)
+  joinedAt   DateTime @updatedAt
+
+  @@id([userId, roomId])
+}
+
+model Wish {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  acceptedAt DateTime @updatedAt
+  room       Room     @relation(fields: [roomId], references: [id])
+  roomId     Int
+  giftName   String
+  giftee     User     @relation(name: "giftee", fields: [gifteeId], references: [id])
+  gifteeId   Int
+  santa      User?    @relation(name: "santa", fields: [santaId], references: [id])
+  santaId    Int?
+  isSecret   Boolean  @default(true)
+}
+
+enum Tag {
+  FAMILY
+  FRIENDS
+  COWORKERS
+}

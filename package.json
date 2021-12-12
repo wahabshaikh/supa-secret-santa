@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "yarn prisma migrate",
+    "migrate": "yarn prisma migrate dev",
     "generate": "yarn prisma generate"
   },
   "dependencies": {
