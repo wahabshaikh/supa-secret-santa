@@ -1,4 +1,4 @@
-import { Room, Wish } from "@prisma/client";
+import { User as PrismaUser, Room, Wish } from "@prisma/client";
 import { User } from "@supabase/supabase-js";
 import axios from "axios";
 import type { GetServerSideProps, NextPage } from "next";
@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import supabase from "../../lib/supabase";
-import { Members } from "../api/room/[roomId]";
+import { RoomData } from "../api/room/[id]";
 
 interface IRoom {
   user: User;
@@ -18,11 +18,11 @@ const Room: NextPage<IRoom> = ({ user }) => {
   const { id } = router.query;
 
   const [giftName, setGiftName] = useState("");
-  const [members, setMembers] = useState<Members>([]);
+  const [members, setMembers] = useState<any>([]);
   const [wishes, setWishes] = useState<Wish[]>([]);
 
   useEffect(() => {
-    getMembers();
+    getRoomData();
     getWishes();
   }, []);
 
@@ -41,9 +41,16 @@ const Room: NextPage<IRoom> = ({ user }) => {
     );
   }
 
-  async function getMembers() {
-    const { data }: { data: Members } = await axios.get(`/api/room/${id}`);
-    setMembers(data);
+  async function getRoomData() {
+    const { data }: { data: RoomData } = await axios.get(`/api/room/${id}`);
+    setMembers(data?.members);
+  }
+
+  async function becomeSanta(wishId: number) {
+    const { data } = await supabase
+      .from("Wish")
+      .update({ santaId: user.id })
+      .eq("id", wishId);
   }
 
   async function getWishes() {
@@ -80,39 +87,41 @@ const Room: NextPage<IRoom> = ({ user }) => {
       <div className="mt-4 grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           {/* Create Wish */}
-          <div className="bg-white shadow md:rounded-lg">
-            <div className="px-4 py-5 md:p-6">
-              <form
-                className="mt-5 md:flex md:items-center"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  createWish();
-                }}
-              >
-                <div className="w-full">
-                  <label htmlFor="email" className="sr-only">
-                    Wish
-                  </label>
-                  <input
-                    type="text"
-                    name="giftName"
-                    id="giftName"
-                    className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full md:text-sm border-gray-300 rounded-md"
-                    placeholder="Enter your wish..."
-                    required
-                    value={giftName}
-                    onChange={(event) => setGiftName(event.target.value)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+          {!wishes.find((wish) => wish.gifteeId === user.id) && (
+            <div className="bg-white shadow md:rounded-lg">
+              <div className="px-4 py-5 md:p-6">
+                <form
+                  className="mt-5 md:flex md:items-center"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    createWish();
+                  }}
                 >
-                  Share
-                </button>
-              </form>
+                  <div className="w-full">
+                    <label htmlFor="email" className="sr-only">
+                      Wish
+                    </label>
+                    <input
+                      type="text"
+                      name="giftName"
+                      id="giftName"
+                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full md:text-sm border-gray-300 rounded-md"
+                      placeholder="Enter your wish..."
+                      required
+                      value={giftName}
+                      onChange={(event) => setGiftName(event.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                  >
+                    Share
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* List */}
           <ul className="mt-4 md:col-span-1 space-y-4">
@@ -120,12 +129,15 @@ const Room: NextPage<IRoom> = ({ user }) => {
               <li key={wish.id} className="bg-white shadow md:rounded-lg">
                 <div className="md:flex md:justify-between md:items-center px-4 py-5 md:p-6">
                   <p className="flex-1">{wish.giftName}</p>
-                  <button
-                    type="submit"
-                    className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
-                  >
-                    Gift 🎁
-                  </button>
+                  {!wish.santaId && (
+                    <button
+                      type="submit"
+                      className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                      onClick={() => becomeSanta(wish.id)}
+                    >
+                      Gift 🎁
+                    </button>
+                  )}
                 </div>
               </li>
             ))}
@@ -146,7 +158,7 @@ const Room: NextPage<IRoom> = ({ user }) => {
                   ({
                     user: { id, avatarUrl, firstName, lastName, email },
                     isApproved,
-                  }) => (
+                  }: any) => (
                     <li key={id} className="py-4">
                       <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
