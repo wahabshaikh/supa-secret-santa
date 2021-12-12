@@ -7,46 +7,22 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import supabase from "../../lib/supabase";
+import { Members } from "../api/room/[roomId]";
 
 interface IRoom {
   user: User;
 }
 
-const members = [
-  {
-    name: "Emily Selman",
-    email: "emilyselman@example.com",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Kristin Watson",
-    email: "kristinwatson@example.com",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Emma Dorsey",
-    email: "emmadorsey@example.com",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Floyd Miles",
-    email: "floydmiles@example.com",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-];
-
 const Room: NextPage<IRoom> = ({ user }) => {
   const router = useRouter();
   const { id } = router.query;
 
-  const [wish, setWish] = useState("");
+  const [giftName, setGiftName] = useState("");
+  const [members, setMembers] = useState<Members>([]);
   const [wishes, setWishes] = useState<Wish[]>([]);
 
   useEffect(() => {
+    getMembers();
     getWishes();
   }, []);
 
@@ -55,7 +31,7 @@ const Room: NextPage<IRoom> = ({ user }) => {
       axios.post("/api/wish", {
         roomId: id,
         gifteeId: user.id,
-        giftName: wish,
+        giftName,
       }),
       {
         loading: "Creating a wish...",
@@ -63,6 +39,11 @@ const Room: NextPage<IRoom> = ({ user }) => {
         error: (error) => error.toString(),
       }
     );
+  }
+
+  async function getMembers() {
+    const { data }: { data: Members } = await axios.get(`/api/room/${id}`);
+    setMembers(data);
   }
 
   async function getWishes() {
@@ -114,13 +95,13 @@ const Room: NextPage<IRoom> = ({ user }) => {
                   </label>
                   <input
                     type="text"
-                    name="wish"
-                    id="wish"
+                    name="giftName"
+                    id="giftName"
                     className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full md:text-sm border-gray-300 rounded-md"
                     placeholder="Enter your wish..."
                     required
-                    value={wish}
-                    onChange={(event) => setWish(event.target.value)}
+                    value={giftName}
+                    onChange={(event) => setGiftName(event.target.value)}
                   />
                 </div>
                 <button
@@ -161,35 +142,39 @@ const Room: NextPage<IRoom> = ({ user }) => {
             </div>
             <div className="flow-root mt-6">
               <ul role="list" className="-my-5 divide-y divide-gray-200">
-                {members.map((member) => (
-                  <li key={member.email} className="py-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0">
-                        <img
-                          className="h-8 w-8 rounded-full"
-                          src={member.avatarUrl}
-                          alt=""
-                        />
+                {members.map(
+                  ({
+                    user: { id, avatarUrl, firstName, lastName, email },
+                    isApproved,
+                  }) => (
+                    <li key={id} className="py-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          <img
+                            className="h-8 w-8 rounded-full"
+                            src={avatarUrl}
+                            alt={firstName}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {`${firstName} ${lastName}`}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">
+                            {email}
+                          </p>
+                        </div>
+                        {!isApproved && (
+                          <div>
+                            <button className="inline-flex items-center shadow-sm px-2.5 py-0.5 border border-gray-300 text-sm leading-5 font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50">
+                              Approve
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {member.name}
-                        </p>
-                        <p className="text-sm text-gray-500 truncate">
-                          {member.email}
-                        </p>
-                      </div>
-                      <div>
-                        <a
-                          href="#"
-                          className="inline-flex items-center shadow-sm px-2.5 py-0.5 border border-gray-300 text-sm leading-5 font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                          Approve
-                        </a>
-                      </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           </div>
