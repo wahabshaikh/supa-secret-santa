@@ -14,12 +14,16 @@ export default async function handler(
       try {
         const { creatorId, name, tag } = body;
 
-        await prisma.room.create({
+        const room = await prisma.room.create({
           data: {
             name,
             tag,
             creatorId,
           },
+        });
+
+        await prisma.usersInRooms.create({
+          data: { userId: creatorId, roomId: room.id, isApproved: true },
         });
 
         res.status(200).json({ message: `Successfully created the room` });

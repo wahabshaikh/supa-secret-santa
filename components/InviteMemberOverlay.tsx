@@ -1,7 +1,6 @@
 import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
-import { Tag } from "@prisma/client";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -58,7 +57,7 @@ const InviteMemberOverlay: FC<InviteMemberOverlayProps> = ({
                     <div className="py-6 px-4 bg-indigo-700 sm:px-6">
                       <div className="flex items-center justify-between">
                         <Dialog.Title className="text-lg font-medium text-white">
-                          New Room
+                          Invite to Room
                         </Dialog.Title>
                         <div className="ml-3 h-7 flex items-center">
                           <button

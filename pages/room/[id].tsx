@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import InviteMemberOverlay from "../../components/InviteMemberOverlay";
+import ShippingAddressModal from "../../components/ShippingAddressModal";
 import supabase from "../../lib/supabase";
 import { RoomData } from "../api/room/[id]";
 
@@ -20,6 +21,7 @@ const Room: NextPage<IRoom> = ({ user }) => {
   const roomId = parseInt(id);
 
   const [open, setOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [giftName, setGiftName] = useState("");
   const [roomData, setRoomData] = useState<RoomData>(null);
   const [wishes, setWishes] = useState<Wish[]>([]);
@@ -138,13 +140,22 @@ const Room: NextPage<IRoom> = ({ user }) => {
               <li key={wish.id} className="bg-white shadow md:rounded-lg">
                 <div className="md:flex md:justify-between md:items-center px-4 py-5 md:p-6">
                   <p className="flex-1">{wish.giftName}</p>
-                  {!wish.santaId && (
+                  {!wish.santaId && wish.gifteeId !== user.id && (
                     <button
                       type="submit"
                       className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
                       onClick={() => becomeSanta(wish.id)}
                     >
                       Gift 🎁
+                    </button>
+                  )}
+                  {wish.santaId === user.id && (
+                    <button
+                      type="submit"
+                      className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                      onClick={() => setModalOpen(true)}
+                    >
+                      See address
                     </button>
                   )}
                 </div>
@@ -205,6 +216,15 @@ const Room: NextPage<IRoom> = ({ user }) => {
         </div>
       </div>
       <InviteMemberOverlay roomId={roomId} open={open} setOpen={setOpen} />
+      <ShippingAddressModal
+        open={modalOpen}
+        setOpen={setModalOpen}
+        street={"Test Street"}
+        city="Mumbai"
+        region="Maharashtra"
+        country="India"
+        postalCode="400037"
+      />
     </>
   );
 };
