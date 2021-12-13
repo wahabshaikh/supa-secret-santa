@@ -51,14 +51,6 @@ const Room: NextPage<IRoom> = ({ user }) => {
     setRoomData(data);
   }
 
-  async function approveMember(roomId: number, userId: string) {
-    const { data, error } = await supabase
-      .from("UsersInRooms")
-      .update({ isApproved: true })
-      .eq("roomId", roomId)
-      .eq("userId", userId);
-  }
-
   async function becomeSanta(wishId: number) {
     await supabase.from("Wish").update({ santaId: user.id }).eq("id", wishId);
   }
@@ -196,16 +188,6 @@ const Room: NextPage<IRoom> = ({ user }) => {
                             {email}
                           </p>
                         </div>
-                        {!isApproved && (
-                          <div>
-                            <button
-                              className="inline-flex items-center shadow-sm px-2.5 py-0.5 border border-gray-300 text-sm leading-5 font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50"
-                              onClick={() => approveMember(roomId, userId)}
-                            >
-                              Approve
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </li>
                   )
