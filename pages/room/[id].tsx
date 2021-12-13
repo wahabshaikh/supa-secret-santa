@@ -1,40 +1,44 @@
-import { Room, Wish } from "@prisma/client";
-import { User } from "@supabase/supabase-js";
+import { Room, Wish, User as Profile } from "@prisma/client";
+import { PostgrestResponse, User } from "@supabase/supabase-js";
 import axios from "axios";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import InviteMemberOverlay from "../../components/InviteMemberOverlay";
 import ShippingAddressModal from "../../components/ShippingAddressModal";
+import prisma from "../../lib/prisma";
 import supabase from "../../lib/supabase";
-import { RoomData } from "../api/room/[id]";
 
 interface IRoom {
   user: User;
+  roomData: string;
 }
 
-const Room: NextPage<IRoom> = ({ user }) => {
-  const router = useRouter();
-  const { id } = router.query as { id: string };
-  const roomId = parseInt(id);
+const Room: NextPage<IRoom> = ({ user, roomData }) => {
+  const room: Room = JSON.parse(roomData);
 
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [giftName, setGiftName] = useState("");
-  const [roomData, setRoomData] = useState<RoomData>(null);
+  const [wish, setWish] = useState("");
+  const [members, setMembers] = useState<(Profile & { isApproved: boolean })[]>(
+    []
+  );
   const [wishes, setWishes] = useState<Wish[]>([]);
+  const [giftee, setGiftee] = useState<
+    (Profile & { isApproved: boolean }) | null
+  >(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    getRoomData();
-    getWishes();
+    fetchMembers();
+    fetchWishes();
 
     const mySubscription = supabase
       .from("*")
       .on("*", () => {
-        getRoomData();
-        getWishes();
+        fetchMembers();
+        fetchWishes();
       })
       .subscribe();
 
@@ -43,49 +47,94 @@ const Room: NextPage<IRoom> = ({ user }) => {
     };
   }, []);
 
-  async function createWish() {
-    await toast.promise(
-      axios.post("/api/wish", {
-        roomId,
-        gifteeId: user.id,
-        giftName,
-      }),
-      {
-        loading: "Creating a wish...",
-        success: (response) => response.data.message,
-        error: (error) => error.toString(),
-      }
-    );
+  useEffect(() => {
+    const gifteeId = wishes.find((wish) => wish.santaId === user.id)?.gifteeId;
+    const giftee = members.find((member) => member.id === gifteeId);
+
+    if (!giftee) return;
+
+    setGiftee(giftee);
+  }, [wishes, user.id]);
+
+  async function fetchMembers() {
+    const { data, error } = (await supabase
+      .from("UsersInRooms")
+      .select("isApproved, User(*)")
+      .filter("roomId", "eq", room.id)) as PostgrestResponse<{
+      isApproved: boolean;
+      User: Profile;
+    }>;
+
+    if (error) toast.error(error.message);
+
+    const members = data?.map(({ isApproved, User }) => ({
+      isApproved,
+      ...User,
+    }));
+
+    setMembers(members || []);
   }
 
-  async function getRoomData() {
-    const { data }: { data: RoomData } = await axios.get(`/api/room/${roomId}`);
-    setRoomData(data);
+  async function createWish() {
+    setIsLoading(true);
+    if (isLoading) toast.loading("Sharing your wish...");
+
+    const { error } = await supabase.from("Wish").insert({
+      roomId: room.id,
+      giftName: wish,
+      gifteeId: user.id,
+    });
+
+    if (error) {
+      setIsLoading(false);
+      toast.error(error.message);
+      return;
+    }
+
+    setIsLoading(false);
+    setWish("");
+    toast.success("Successfully shared your wish");
+
+    // await toast.promise(
+    //   axios.post("/api/wish", {
+    //     roomId: room.id,
+    //     gifteeId: user.id,
+    //     wish,
+    //   }),
+    //   {
+    //     loading: "Creating a wish...",
+    //     success: (response) => response.data.message,
+    //     error: (error) => error.toString(),
+    //   }
+    // );
   }
 
   async function becomeSanta(wishId: number) {
-    await supabase.from("Wish").update({ santaId: user.id }).eq("id", wishId);
+    await supabase
+      .from("Wish")
+      .update({ santaId: user.id, acceptedAt: new Date().toISOString() })
+      .eq("id", wishId);
   }
 
-  async function getWishes() {
+  async function fetchWishes() {
     const { data } = (await supabase
       .from("Wish")
       .select()
-      .filter("roomId", "eq", id)) as { data: Wish[] };
+      .filter("roomId", "eq", room.id)) as PostgrestResponse<Wish>;
 
-    setWishes(data);
+    setWishes(data || []);
   }
 
   return (
     <>
       <Head>
-        <title>{roomData?.name} | Supa Secret Santa</title>
+        <title>{room.name} | Supa Secret Santa</title>
       </Head>
 
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 md:text-3xl md:truncate">
-            {roomData?.name}
+            {room.name}
           </h2>
         </div>
         <div className="mt-4 md:mt-0">
@@ -118,13 +167,13 @@ const Room: NextPage<IRoom> = ({ user }) => {
                     </label>
                     <input
                       type="text"
-                      name="giftName"
-                      id="giftName"
+                      name="wish"
+                      id="wish"
                       className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full md:text-sm border-gray-300 rounded-md"
                       placeholder="Enter your wish..."
                       required
-                      value={giftName}
-                      onChange={(event) => setGiftName(event.target.value)}
+                      value={wish}
+                      onChange={(event) => setWish(event.target.value)}
                     />
                   </div>
                   <button
@@ -178,59 +227,70 @@ const Room: NextPage<IRoom> = ({ user }) => {
             </div>
             <div className="flow-root mt-6">
               <ul role="list" className="-my-5 divide-y divide-gray-200">
-                {roomData?.members.map(
-                  ({
-                    user: { id: userId, avatarUrl, firstName, lastName, email },
-                    isApproved,
-                  }: any) => (
-                    <li key={userId} className="py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img
-                            className="h-8 w-8 rounded-full"
-                            src={avatarUrl}
-                            alt={firstName}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {`${firstName} ${lastName}`}
-                          </p>
-                          <p className="text-sm text-gray-500 truncate">
-                            {email}
-                          </p>
-                        </div>
+                {members.map((member) => (
+                  <li key={member.id} className="py-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          className="h-8 w-8 rounded-full"
+                          src={member.avatarUrl}
+                          alt={member.firstName}
+                        />
                       </div>
-                    </li>
-                  )
-                )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {`${member.firstName} ${member.lastName}`}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {member.email}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
       </div>
-      <InviteMemberOverlay roomId={roomId} open={open} setOpen={setOpen} />
+      <InviteMemberOverlay roomId={room.id} open={open} setOpen={setOpen} />
       <ShippingAddressModal
         open={modalOpen}
         setOpen={setModalOpen}
-        street={"Test Street"}
-        city="Mumbai"
-        region="Maharashtra"
-        country="India"
-        postalCode="400037"
+        address={{
+          street: giftee?.street,
+          city: giftee?.city,
+          region: giftee?.region,
+          country: giftee?.country,
+          postalCode: giftee?.postalCode,
+        }}
       />
     </>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  params,
+}) => {
+  // Redirect unautheticated user to login
   const { user } = await supabase.auth.api.getUserByCookie(req);
-
   if (!user) {
     return { redirect: { destination: "/login", permanent: false } };
   }
 
-  return { props: { user } };
+  // Fetch room data
+  const id = params?.id as string;
+  const roomId = parseInt(id);
+  const roomData = await prisma.room.findUnique({
+    where: { id: roomId },
+  });
+
+  if (!roomData) {
+    return { notFound: true };
+  }
+
+  return { props: { user, roomData: JSON.stringify(roomData) } };
 };
 
 export default Room;

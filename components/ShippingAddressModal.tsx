@@ -5,22 +5,21 @@ import { GiftIcon } from "@heroicons/react/solid";
 interface ShippingAddressModalProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  street: string;
-  city: string;
-  region: string;
-  country: string;
-  postalCode: string;
+  address: {
+    street: string | undefined;
+    city: string | undefined;
+    region: string | undefined;
+    country: string | undefined;
+    postalCode: string | undefined;
+  };
 }
 
 const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
   open,
   setOpen,
-  street,
-  city,
-  region,
-  country,
-  postalCode,
+  address,
 }) => {
+  const { street, city, region, country, postalCode } = address;
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog

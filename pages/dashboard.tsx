@@ -163,7 +163,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  // Redirect unautheticated user to dashboard
+  // Redirect unautheticated user to login
   const { user } = await supabase.auth.api.getUserByCookie(req);
   if (!user) {
     return { redirect: { destination: "/login", permanent: false } };

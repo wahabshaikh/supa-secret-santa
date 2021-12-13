@@ -52,17 +52,17 @@ model UsersInRooms {
 }
 
 model Wish {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  acceptedAt DateTime @updatedAt
-  room       Room     @relation(fields: [roomId], references: [id])
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  room       Room      @relation(fields: [roomId], references: [id])
   roomId     Int
   giftName   String
-  giftee     User     @relation(name: "giftee", fields: [gifteeId], references: [id])
+  giftee     User      @relation(name: "giftee", fields: [gifteeId], references: [id])
   gifteeId   String
-  santa      User?    @relation(name: "santa", fields: [santaId], references: [id])
+  santa      User?     @relation(name: "santa", fields: [santaId], references: [id])
   santaId    String?
-  isSecret   Boolean  @default(true)
+  acceptedAt DateTime? @updatedAt
+  isSecret   Boolean   @default(true)
 }
 
 enum Tag {

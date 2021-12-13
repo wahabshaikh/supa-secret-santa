@@ -1,25 +1,10 @@
-import { Tag } from "@prisma/client";
+import { Room } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 
-export type RoomData = {
-  name: string;
-  tag: Tag;
-  members: {
-    user: {
-      id: string;
-      avatarUrl: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-    };
-    isApproved: boolean;
-  }[];
-} | null;
-
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<RoomData>
+  res: NextApiResponse<Room>
 ) {
   const { method, query } = req;
 
@@ -27,28 +12,16 @@ export default async function handler(
     case "GET":
       try {
         const { id } = query as { id: string };
+        const roomId = parseInt(id);
 
         const roomData = await prisma.room.findUnique({
-          where: { id: parseInt(id) },
-          select: {
-            name: true,
-            tag: true,
-            members: {
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    avatarUrl: true,
-                    firstName: true,
-                    lastName: true,
-                    email: true,
-                  },
-                },
-                isApproved: true,
-              },
-            },
-          },
+          where: { id: roomId },
         });
+
+        if (!roomData) {
+          res.status(404).end(`Not found`);
+          return;
+        }
 
         res.status(200).json(roomData);
       } catch (error: any) {
