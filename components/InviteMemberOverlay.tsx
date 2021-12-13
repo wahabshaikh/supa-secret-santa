@@ -3,6 +3,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import axios from "axios";
 import toast from "react-hot-toast";
+import supabase from "../lib/supabase";
+import { PostgrestResponse } from "@supabase/supabase-js";
+import { User } from "@prisma/client";
 
 interface InviteMemberOverlayProps {
   roomId: number;
@@ -16,13 +19,46 @@ const InviteMemberOverlay: FC<InviteMemberOverlayProps> = ({
   setOpen,
 }) => {
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   async function inviteMember() {
-    await toast.promise(axios.post("/api/inviteMember", { email, roomId }), {
-      loading: "Inviting to room...",
-      success: (response) => response.data.message,
-      error: (error) => error.toString(),
-    });
+    setIsLoading(true);
+    if (isLoading) toast.loading(`Inviting ${email}...`);
+
+    const { data, error: getUserError } = (await supabase
+      .from("User")
+      .select("id")
+      .eq("email", email)) as PostgrestResponse<{ id: string }>;
+
+    const user = data?.[0];
+    if (!user) {
+      setIsLoading(false);
+      toast.error(`User not found. Please ask ${email} to sign up.`);
+      return;
+    } else if (getUserError) {
+      setIsLoading(false);
+      toast.error(getUserError.message);
+      return;
+    }
+
+    const userId = user.id;
+    const { error: insertUserInRoomError } = await supabase
+      .from("UsersInRooms")
+      .insert({
+        roomId,
+        userId,
+        joinedAt: new Date().toISOString(),
+      });
+
+    if (insertUserInRoomError) {
+      setIsLoading(false);
+      toast.error(insertUserInRoomError.message);
+      return;
+    }
+
+    setEmail("");
+    setIsLoading(false);
+    toast.success(`Successfully invited ${email} to the room`);
   }
 
   return (
