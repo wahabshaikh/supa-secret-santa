@@ -1,20 +1,42 @@
 import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import Button from "../components/Button";
 import supabase from "../lib/supabase";
 
 const Login: NextPage = () => {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  useEffect(() => {
+    let toastId: string | undefined;
+    if (isSubmitting) {
+      toastId = toast.loading("Signing in...");
+    }
+
+    return () => toast.remove(toastId);
+  }, [isSubmitting]);
+
   async function signIn() {
-    if (!email) return;
+    setIsSubmitting(true);
+
+    if (!email) {
+      setIsSubmitting(false);
+      toast.error("Please enter an email");
+      return;
+    }
 
     const { error } = await supabase.auth.signIn({ email });
     if (error) {
       console.error(error);
+      toast.error(error.message);
+      setIsSubmitting(false);
     } else {
       setIsSubmitted(true);
+      setIsSubmitting(false);
+      setEmail("");
     }
   }
 
@@ -23,19 +45,17 @@ const Login: NextPage = () => {
       <Head>
         <title>Login | Supa Secret Santa</title>
       </Head>
-      <main className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <main className="min-h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-center text-9xl">🎅</h1>
+        <div className="mt-8 max-w-md w-full space-y-8 bg-white px-4 py-5 md:p-6 rounded-md shadow-sm">
           <div>
-            <h1 className="text-center text-7xl">🎅</h1>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               Sign in to your account
             </h2>
           </div>
 
           {isSubmitted ? (
-            <p className="text-center text-lg">
-              Please check your email to sign in
-            </p>
+            <p className="text-center">Please check your email to sign in</p>
           ) : (
             <form
               className="mt-8 space-y-6"
@@ -63,12 +83,13 @@ const Login: NextPage = () => {
                 </div>
               </div>
               <div>
-                <button
+                <Button
                   type="submit"
-                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="w-full bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                  disabled={isSubmitting}
                 >
                   Sign in
-                </button>
+                </Button>
               </div>
             </form>
           )}

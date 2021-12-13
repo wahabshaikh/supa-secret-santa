@@ -51,7 +51,7 @@ const Profile: NextPage<IProfile> = ({ profile }) => {
         <title>Profile | Supa Secret Santa</title>
       </Head>
 
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto px-4 py-5 md:p-6 bg-white rounded-md shadow-sm">
         <FormProvider {...methods}>
           <form
             className="space-y-8 divide-y divide-gray-200"
@@ -174,7 +174,12 @@ const Profile: NextPage<IProfile> = ({ profile }) => {
 
             <div className="pt-5">
               <div className="flex justify-end">
-                <Button type="submit">Save</Button>
+                <Button
+                  type="submit"
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                >
+                  Save
+                </Button>
               </div>
             </div>
           </form>

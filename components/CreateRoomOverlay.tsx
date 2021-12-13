@@ -92,7 +92,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
                   }}
                 >
                   <div className="flex-1 h-0 overflow-y-auto">
-                    <div className="py-6 px-4 bg-indigo-700 sm:px-6">
+                    <div className="py-6 px-4 bg-green-700 sm:px-6">
                       <div className="flex items-center justify-between">
                         <Dialog.Title className="text-lg font-medium text-white">
                           New Room
@@ -100,7 +100,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
                         <div className="ml-3 h-7 flex items-center">
                           <button
                             type="button"
-                            className="bg-indigo-700 rounded-md text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                            className="bg-green-700 rounded-md text-green-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                             onClick={() => setOpen(false)}
                           >
                             <span className="sr-only">Close panel</span>
@@ -109,7 +109,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
                         </div>
                       </div>
                       <div className="mt-1">
-                        <p className="text-sm text-indigo-300">
+                        <p className="text-sm text-green-300">
                           Get started by filling in the information below to
                           create your new room.
                         </p>
@@ -130,7 +130,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
                                 type="text"
                                 name="name"
                                 id="name"
-                                className="block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                                className="block w-full shadow-sm sm:text-sm focus:ring-green-500 focus:border-green-500 border-gray-300 rounded-md"
                                 value={name}
                                 onChange={(event) =>
                                   setName(event.target.value)
@@ -150,7 +150,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
                               <select
                                 id="tag"
                                 name="tag"
-                                className="block w-full sm:text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                                className="block w-full sm:text-sm shadow-sm focus:ring-green-500 focus:border-green-500 border-gray-300 rounded-md"
                                 value={tag}
                                 onChange={(event) =>
                                   setTag(event.target.value as Tag)
@@ -169,14 +169,14 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
                   <div className="flex-shrink-0 px-4 py-4 flex justify-end">
                     <button
                       type="button"
-                      className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       onClick={() => setOpen(false)}
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="ml-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className="ml-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
                       Save
                     </button>

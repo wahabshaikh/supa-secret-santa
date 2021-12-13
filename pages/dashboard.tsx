@@ -14,6 +14,7 @@ import prisma from "../lib/prisma";
 import supabase from "../lib/supabase";
 import CreateRoomOverlay from "../components/CreateRoomOverlay";
 import Badge from "../components/Badge";
+import Button from "../components/Button";
 
 interface IDashboard {
   user: User;
@@ -77,19 +78,19 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
         <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h2 className="text-lg leading-6 font-medium text-gray-900">
+              <h2 className="text-3xl leading-6 font-heading text-gray-900">
                 Rooms
               </h2>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              <button
+              <Button
                 type="button"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
                 onClick={() => setOpen(!open)}
               >
                 <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
                 Create Room
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -103,7 +104,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
                       <div className="truncate">
                         {/* Room details */}
                         <div className="flex text-sm">
-                          <p className="font-medium text-indigo-600 truncate">
+                          <p className="font-medium text-green-600 truncate">
                             {room.name}
                           </p>
                           <p className="ml-1 flex-shrink-0 font-normal text-gray-500">
@@ -134,7 +135,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
                         {/* Accept invitation button */}
                         {!room.isApproved && (
                           <button
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             onClick={() => acceptInvitation(room.id, user.id)}
                           >
                             Accept

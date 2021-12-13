@@ -5,6 +5,8 @@ import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import Badge from "../../components/Badge";
+import Button from "../../components/Button";
 import InviteMemberOverlay from "../../components/InviteMemberOverlay";
 import ShippingAddressModal from "../../components/ShippingAddressModal";
 import prisma from "../../lib/prisma";
@@ -131,20 +133,25 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
         <title>{room.name} | Supa Secret Santa</title>
       </Head>
 
-      <div className="md:flex md:items-center md:justify-between">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 md:text-3xl md:truncate">
-            {room.name}
-          </h2>
-        </div>
-        <div className="mt-4 md:mt-0">
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            onClick={() => setOpen(!open)}
-          >
-            Invite
-          </button>
+      <div className="bg-white shadow md:rounded-lg">
+        <div className="flex items-center justify-between px-4 py-5 md:p-6">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold font-heading text-gray-800 md:text-3xl mb-2">
+              {room.name}
+            </h1>
+            <Badge colors="bg-green-100 text-green-800">{room.tag}</Badge>
+          </div>
+          <div>
+            {room.creatorId === user.id && (
+              <Button
+                type="button"
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                onClick={() => setOpen(!open)}
+              >
+                Invite
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -169,47 +176,47 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
                       type="text"
                       name="wish"
                       id="wish"
-                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full md:text-sm border-gray-300 rounded-md"
+                      className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
                       placeholder="Enter your wish..."
                       required
                       value={wish}
                       onChange={(event) => setWish(event.target.value)}
                     />
                   </div>
-                  <button
+                  <Button
                     type="submit"
-                    className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                    className="mt-5 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
                   >
                     Share
-                  </button>
+                  </Button>
                 </form>
               </div>
             </div>
           )}
 
           {/* List */}
-          <ul className="mt-4 md:col-span-1 space-y-4">
+          <ul className="md:col-span-1 space-y-4">
             {wishes.map((wish) => (
               <li key={wish.id} className="bg-white shadow md:rounded-lg">
                 <div className="md:flex md:justify-between md:items-center px-4 py-5 md:p-6">
                   <p className="flex-1">{wish.giftName}</p>
                   {!wish.santaId && wish.gifteeId !== user.id && (
-                    <button
+                    <Button
                       type="submit"
-                      className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                      className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
                       onClick={() => becomeSanta(wish.id)}
                     >
                       Gift 🎁
-                    </button>
+                    </Button>
                   )}
                   {wish.santaId === user.id && (
-                    <button
+                    <Button
                       type="submit"
-                      className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                      className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
                       onClick={() => setModalOpen(true)}
                     >
                       See address
-                    </button>
+                    </Button>
                   )}
                 </div>
               </li>
@@ -218,7 +225,7 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
         </div>
 
         {/* Members */}
-        <div className="hidden md:block md:col-span-1 bg-white shadow md:rounded-lg">
+        <div className="md:col-span-1 bg-white shadow md:rounded-lg">
           <div className="p-6">
             <div className="bg-white py-5 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -245,6 +252,15 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
                           {member.email}
                         </p>
                       </div>
+                      {/* Badges */}
+                      {member.id === room.creatorId && (
+                        <Badge colors="bg-green-100 text-green-800">
+                          Admin
+                        </Badge>
+                      )}
+                      {!member.isApproved && (
+                        <Badge colors="bg-red-100 text-red-800">Pending</Badge>
+                      )}
                     </div>
                   </li>
                 ))}
