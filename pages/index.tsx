@@ -7,6 +7,11 @@ const Home: NextPage = () => {
     <>
       <Head>
         <title>Supa Secret Santa</title>
+        <meta
+          name="description"
+          content="With the spirit of the holiday season, we bring to you a Supabase powered platform to be a Secret Santa for your loved ones, online."
+        />
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
       </Head>
       <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="max-w-3xl mx-aut shadow-sm md:rounded-md backdrop-blur-xl bg-red-100/90">
