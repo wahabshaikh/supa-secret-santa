@@ -1,11 +1,9 @@
 import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
-import axios from "axios";
 import toast from "react-hot-toast";
 import supabase from "../lib/supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
-import { User } from "@prisma/client";
 
 interface InviteMemberOverlayProps {
   roomId: number;
@@ -56,8 +54,8 @@ const InviteMemberOverlay: FC<InviteMemberOverlayProps> = ({
       return;
     }
 
-    setEmail("");
     setIsLoading(false);
+    setEmail("");
     toast.success(`Successfully invited ${email} to the room`);
   }
 
@@ -109,7 +107,8 @@ const InviteMemberOverlay: FC<InviteMemberOverlayProps> = ({
                       <div className="mt-1">
                         <p className="text-sm text-indigo-300">
                           Get started by filling in the information below to
-                          create your new room.
+                          invite a member to your room. Make sure they are
+                          signed up to receive an invitation.
                         </p>
                       </div>
                     </div>

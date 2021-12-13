@@ -36,7 +36,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
     }
 
     const roomId = data?.[0].id;
-    const { error: InsertUserInRoomError } = await supabase
+    const { error: insertUserInRoomError } = await supabase
       .from("UsersInRooms")
       .insert({
         userId: creatorId,
@@ -45,9 +45,9 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
         joinedAt: new Date().toISOString(),
       });
 
-    if (InsertUserInRoomError) {
+    if (insertUserInRoomError) {
       setIsLoading(false);
-      toast.error(InsertUserInRoomError.message);
+      toast.error(insertUserInRoomError.message);
       return;
     }
 

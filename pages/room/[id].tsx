@@ -1,4 +1,4 @@
-import { User as PrismaUser, Room, Wish } from "@prisma/client";
+import { Room, Wish } from "@prisma/client";
 import { User } from "@supabase/supabase-js";
 import axios from "axios";
 import type { GetServerSideProps, NextPage } from "next";
@@ -29,6 +29,18 @@ const Room: NextPage<IRoom> = ({ user }) => {
   useEffect(() => {
     getRoomData();
     getWishes();
+
+    const mySubscription = supabase
+      .from("*")
+      .on("*", () => {
+        getRoomData();
+        getWishes();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeSubscription(mySubscription);
+    };
   }, []);
 
   async function createWish() {
