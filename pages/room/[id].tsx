@@ -54,7 +54,7 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
     if (!giftee) return;
 
     setGiftee(giftee);
-  }, [wishes, user.id]);
+  }, [wishes, members, user.id]);
 
   async function fetchMembers() {
     const { data, error } = (await supabase
