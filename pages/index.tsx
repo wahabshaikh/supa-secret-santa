@@ -6,7 +6,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Supa Sceret Santa</title>
+        <title>Supa Secret Santa</title>
       </Head>
       <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="max-w-3xl mx-aut shadow-sm md:rounded-md backdrop-blur-xl bg-red-100/90">
