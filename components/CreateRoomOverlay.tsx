@@ -1,9 +1,10 @@
 import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
-import { Tag } from "@prisma/client";
-import axios from "axios";
+import { Room, Tag } from "@prisma/client";
 import toast from "react-hot-toast";
+import supabase from "../lib/supabase";
+import { PostgrestResponse } from "@supabase/supabase-js";
 
 interface CreateRoomOverlayProps {
   creatorId: string;
@@ -18,13 +19,48 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
 }) => {
   const [name, setName] = useState("");
   const [tag, setTag] = useState<Tag>("FAMILY");
+  const [isLoading, setIsLoading] = useState(false);
 
   async function createRoom() {
-    await toast.promise(axios.post("/api/room", { creatorId, name, tag }), {
-      loading: "Creating a room...",
-      success: (response) => response.data.message,
-      error: (error) => error.toString(),
-    });
+    setIsLoading(true);
+    if (isLoading) toast.loading("Creating a room...");
+
+    const { data, error: createRoomError } = (await supabase
+      .from("Room")
+      .insert({ name, tag, creatorId })) as PostgrestResponse<Room>;
+
+    if (createRoomError) {
+      setIsLoading(false);
+      toast.error(createRoomError.message);
+      return;
+    }
+
+    const roomId = data?.[0].id;
+    const { error: InsertUserInRoomError } = await supabase
+      .from("UsersInRooms")
+      .insert({
+        userId: creatorId,
+        roomId,
+        isApproved: true,
+        joinedAt: new Date().toISOString(),
+      });
+
+    if (InsertUserInRoomError) {
+      setIsLoading(false);
+      toast.error(InsertUserInRoomError.message);
+      return;
+    }
+
+    setIsLoading(false);
+    setName("");
+    setTag("FAMILY");
+    toast.success("Successfully created a room");
+
+    // await toast.promise(axios.post("/api/room", { creatorId, name, tag }), {
+    //   loading: "Creating a room...",
+    //   success: (response) => response.data.message,
+    //   error: (error) => error.toString(),
+    // });
   }
 
   return (

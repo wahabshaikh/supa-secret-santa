@@ -27,7 +27,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
     fetchRooms();
 
     const mySubscription = supabase
-      .from("UsersInRooms")
+      .from("*")
       .on("*", () => {
         fetchRooms();
       })
