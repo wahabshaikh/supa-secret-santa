@@ -7,7 +7,8 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "yarn prisma migrate dev",
-    "generate": "yarn prisma generate"
+    "generate": "yarn prisma generate",
+    "db:push": "yarn prisma db push"
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.1.2",
