@@ -20,9 +20,10 @@ interface IRoom {
 const Room: NextPage<IRoom> = ({ user, roomData }) => {
   const room: Room = JSON.parse(roomData);
 
+  const [giftName, setGiftName] = useState("");
+  const [giftUrl, setGiftUrl] = useState("");
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [wish, setWish] = useState("");
   const [members, setMembers] = useState<(Profile & { isApproved: boolean })[]>(
     []
   );
@@ -83,7 +84,8 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
 
     const { error } = await supabase.from("Wish").insert({
       roomId: room.id,
-      giftName: wish,
+      giftName,
+      giftUrl,
       gifteeId: user.id,
     });
 
@@ -94,7 +96,8 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
     }
 
     setIsLoading(false);
-    setWish("");
+    setGiftName("");
+    setGiftUrl("");
     toast.success("Successfully shared your wish");
 
     // await toast.promise(
@@ -161,31 +164,47 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
           {!wishes.find((wish) => wish.gifteeId === user.id) && (
             <div className="bg-white shadow md:rounded-lg">
               <div className="px-4 py-5 md:p-6">
+                <h1>Make a wish</h1>
                 <form
-                  className="mt-5 md:flex md:items-center"
+                  className="mt-5 space-y-4"
                   onSubmit={(event) => {
                     event.preventDefault();
                     createWish();
                   }}
                 >
                   <div className="w-full">
-                    <label htmlFor="email" className="sr-only">
-                      Wish
+                    <label htmlFor="giftName" className="sr-only">
+                      Gift Name
                     </label>
                     <input
                       type="text"
-                      name="wish"
-                      id="wish"
+                      name="giftName"
+                      id="giftName"
                       className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
-                      placeholder="Enter your wish..."
+                      placeholder="Gift Name"
                       required
-                      value={wish}
-                      onChange={(event) => setWish(event.target.value)}
+                      value={giftName}
+                      onChange={(event) => setGiftName(event.target.value)}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label htmlFor="giftUrl" className="sr-only">
+                      Gift URL
+                    </label>
+                    <input
+                      type="text"
+                      name="giftUrl"
+                      id="giftUrl"
+                      className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
+                      placeholder="Gift URL"
+                      required
+                      value={giftUrl}
+                      onChange={(event) => setGiftUrl(event.target.value)}
                     />
                   </div>
                   <Button
                     type="submit"
-                    className="mt-5 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                    className="mt-5 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:w-auto md:text-sm"
                   >
                     Share
                   </Button>
@@ -199,7 +218,12 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
             {wishes.map((wish) => (
               <li key={wish.id} className="bg-white shadow md:rounded-lg">
                 <div className="md:flex md:justify-between md:items-center px-4 py-5 md:p-6">
-                  <p className="flex-1">{wish.giftName}</p>
+                  <a
+                    href={wish.giftUrl}
+                    className="flex-1 font-semibold underline"
+                  >
+                    {wish.giftName}
+                  </a>
                   {!wish.santaId && wish.gifteeId !== user.id && (
                     <Button
                       type="submit"
