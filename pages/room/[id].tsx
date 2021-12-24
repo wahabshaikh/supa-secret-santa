@@ -1,27 +1,26 @@
 import { Room, Wish, User as Profile } from "@prisma/client";
 import { PostgrestResponse, User } from "@supabase/supabase-js";
-import axios from "axios";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
+import Card from "../../components/Card";
+import CreateWish from "../../components/CreateWish";
 import InviteMemberOverlay from "../../components/InviteMemberOverlay";
 import ShippingAddressModal from "../../components/ShippingAddressModal";
 import prisma from "../../lib/prisma";
 import supabase from "../../lib/supabase";
 
-interface IRoom {
+interface RoomProps {
   user: User;
   roomData: string;
 }
 
-const Room: NextPage<IRoom> = ({ user, roomData }) => {
+const Room: NextPage<RoomProps> = ({ user, roomData }) => {
   const room: Room = JSON.parse(roomData);
 
-  const [giftName, setGiftName] = useState("");
-  const [giftUrl, setGiftUrl] = useState("");
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [members, setMembers] = useState<(Profile & { isApproved: boolean })[]>(
@@ -31,13 +30,40 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
   const [giftee, setGiftee] = useState<
     (Profile & { isApproved: boolean }) | null
   >(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    async function fetchMembers() {
+      const { data, error } = (await supabase
+        .from("UsersInRooms")
+        .select("isApproved, User(*)")
+        .filter("roomId", "eq", room.id)) as PostgrestResponse<{
+        isApproved: boolean;
+        User: Profile;
+      }>;
+
+      if (error) toast.error(error.message);
+
+      const members = data?.map(({ isApproved, User }) => ({
+        isApproved,
+        ...User,
+      }));
+
+      setMembers(members || []);
+    }
+
+    async function fetchWishes() {
+      const { data } = (await supabase
+        .from("Wish")
+        .select()
+        .filter("roomId", "eq", room.id)) as PostgrestResponse<Wish>;
+
+      setWishes(data || []);
+    }
+
     fetchMembers();
     fetchWishes();
 
-    const mySubscription = supabase
+    const subscription = supabase
       .from("*")
       .on("*", () => {
         fetchMembers();
@@ -46,9 +72,9 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
       .subscribe();
 
     return () => {
-      supabase.removeSubscription(mySubscription);
+      supabase.removeSubscription(subscription);
     };
-  }, []);
+  }, [room.id]);
 
   useEffect(() => {
     const gifteeId = wishes.find((wish) => wish.santaId === user.id)?.gifteeId;
@@ -59,75 +85,11 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
     setGiftee(giftee);
   }, [wishes, members, user.id]);
 
-  async function fetchMembers() {
-    const { data, error } = (await supabase
-      .from("UsersInRooms")
-      .select("isApproved, User(*)")
-      .filter("roomId", "eq", room.id)) as PostgrestResponse<{
-      isApproved: boolean;
-      User: Profile;
-    }>;
-
-    if (error) toast.error(error.message);
-
-    const members = data?.map(({ isApproved, User }) => ({
-      isApproved,
-      ...User,
-    }));
-
-    setMembers(members || []);
-  }
-
-  async function createWish() {
-    setIsLoading(true);
-    if (isLoading) toast.loading("Sharing your wish...");
-
-    const { error } = await supabase.from("Wish").insert({
-      roomId: room.id,
-      giftName,
-      giftUrl,
-      gifteeId: user.id,
-    });
-
-    if (error) {
-      setIsLoading(false);
-      toast.error(error.message);
-      return;
-    }
-
-    setIsLoading(false);
-    setGiftName("");
-    setGiftUrl("");
-    toast.success("Successfully shared your wish");
-
-    // await toast.promise(
-    //   axios.post("/api/wish", {
-    //     roomId: room.id,
-    //     gifteeId: user.id,
-    //     wish,
-    //   }),
-    //   {
-    //     loading: "Creating a wish...",
-    //     success: (response) => response.data.message,
-    //     error: (error) => error.toString(),
-    //   }
-    // );
-  }
-
   async function becomeSanta(wishId: number) {
     await supabase
       .from("Wish")
       .update({ santaId: user.id, acceptedAt: new Date().toISOString() })
       .eq("id", wishId);
-  }
-
-  async function fetchWishes() {
-    const { data } = (await supabase
-      .from("Wish")
-      .select()
-      .filter("roomId", "eq", room.id)) as PostgrestResponse<Wish>;
-
-    setWishes(data || []);
   }
 
   return (
@@ -136,13 +98,14 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
         <title>{room.name} | Supa Secret Santa</title>
       </Head>
 
-      <div className="bg-white shadow md:rounded-lg">
-        <div className="flex items-center justify-between px-4 py-5 md:p-6">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold font-heading text-gray-800 md:text-3xl mb-2">
+      {/* Room details */}
+      <Card>
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold font-heading text-gray-800">
               {room.name}
             </h1>
-            <Badge colors="bg-green-100 text-green-800">{room.tag}</Badge>
+            <Badge className="bg-green-100 text-green-800">{room.tag}</Badge>
           </div>
           <div>
             {room.creatorId === user.id && (
@@ -156,101 +119,55 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
             )}
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="mt-4 grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           {/* Create Wish */}
           {!wishes.find((wish) => wish.gifteeId === user.id) && (
-            <div className="bg-white shadow md:rounded-lg">
-              <div className="px-4 py-5 md:p-6">
-                <h1>Make a wish</h1>
-                <form
-                  className="mt-5 space-y-4"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    createWish();
-                  }}
-                >
-                  <div className="w-full">
-                    <label htmlFor="giftName" className="sr-only">
-                      Gift Name
-                    </label>
-                    <input
-                      type="text"
-                      name="giftName"
-                      id="giftName"
-                      className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
-                      placeholder="Gift Name"
-                      required
-                      value={giftName}
-                      onChange={(event) => setGiftName(event.target.value)}
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label htmlFor="giftUrl" className="sr-only">
-                      Gift URL
-                    </label>
-                    <input
-                      type="text"
-                      name="giftUrl"
-                      id="giftUrl"
-                      className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
-                      placeholder="Gift URL"
-                      required
-                      value={giftUrl}
-                      onChange={(event) => setGiftUrl(event.target.value)}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="mt-5 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:w-auto md:text-sm"
-                  >
-                    Share
-                  </Button>
-                </form>
-              </div>
-            </div>
+            <CreateWish roomId={room.id} gifteeId={user.id} />
           )}
 
-          {/* List */}
-          <ul className="md:col-span-1 space-y-4">
+          {/* Wish List */}
+          <ul className="mt-4 md:col-span-1 space-y-4">
             {wishes.map((wish) => (
-              <li key={wish.id} className="bg-white shadow md:rounded-lg">
-                <div className="md:flex md:justify-between md:items-center px-4 py-5 md:p-6">
-                  <a
-                    href={wish.giftUrl}
-                    className="flex-1 font-semibold underline"
-                  >
-                    {wish.giftName}
-                  </a>
-                  {!wish.santaId && wish.gifteeId !== user.id && (
-                    <Button
-                      type="submit"
-                      className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
-                      onClick={() => becomeSanta(wish.id)}
+              <li key={wish.id}>
+                <Card>
+                  <div className="md:flex md:justify-between md:items-center">
+                    <a
+                      href={wish.giftUrl}
+                      className="flex-1 font-semibold underline"
                     >
-                      Gift 🎁
-                    </Button>
-                  )}
-                  {wish.santaId === user.id && (
-                    <Button
-                      type="submit"
-                      className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
-                      onClick={() => setModalOpen(true)}
-                    >
-                      See address
-                    </Button>
-                  )}
-                </div>
+                      {wish.giftName}
+                    </a>
+                    {!wish.santaId && wish.gifteeId !== user.id && (
+                      <Button
+                        type="button"
+                        className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3"
+                        onClick={() => becomeSanta(wish.id)}
+                      >
+                        Gift 🎁
+                      </Button>
+                    )}
+                    {wish.santaId === user.id && (
+                      <Button
+                        type="button"
+                        className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                        onClick={() => setModalOpen(true)}
+                      >
+                        See address
+                      </Button>
+                    )}
+                  </div>
+                </Card>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Members */}
-        <div className="md:col-span-1 bg-white shadow md:rounded-lg">
-          <div className="p-6">
+        {/* Members List */}
+        <div className="md:col-span-1">
+          <Card>
             <div className="bg-white py-5 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
                 Members
@@ -276,23 +193,25 @@ const Room: NextPage<IRoom> = ({ user, roomData }) => {
                           {member.email}
                         </p>
                       </div>
-                      {/* Badges */}
                       {member.id === room.creatorId && (
-                        <Badge colors="bg-green-100 text-green-800">
+                        <Badge className="bg-green-100 text-green-800">
                           Admin
                         </Badge>
                       )}
                       {!member.isApproved && (
-                        <Badge colors="bg-red-100 text-red-800">Pending</Badge>
+                        <Badge className="bg-red-100 text-red-800">
+                          Pending
+                        </Badge>
                       )}
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
+
       <InviteMemberOverlay roomId={room.id} open={open} setOpen={setOpen} />
       <ShippingAddressModal
         open={modalOpen}

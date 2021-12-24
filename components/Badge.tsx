@@ -1,13 +1,16 @@
-import { FC } from "react";
+import classNames from "classnames";
+import { FC, HTMLAttributes } from "react";
 
-interface BadgeProps {
-  colors: string;
-}
-
-const Badge: FC<BadgeProps> = ({ colors, children }) => {
+const Badge: FC<HTMLAttributes<HTMLSpanElement>> = ({
+  className,
+  children,
+}) => {
   return (
     <span
-      className={`inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium ${colors}`}
+      className={classNames(
+        "inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium",
+        className
+      )}
     >
       {children}
     </span>
