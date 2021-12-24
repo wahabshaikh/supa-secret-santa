@@ -1,6 +1,8 @@
 import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { GiftIcon } from "@heroicons/react/solid";
+import ReactConfetti from "react-confetti";
+import Button from "./Button";
 
 interface ShippingAddressModalProps {
   open: boolean;
@@ -28,6 +30,7 @@ const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
         onClose={setOpen}
       >
         <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <ReactConfetti />
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -79,13 +82,9 @@ const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
                 </div>
               </div>
               <div className="mt-5 sm:mt-6">
-                <button
-                  type="button"
-                  className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-                  onClick={() => setOpen(false)}
-                >
+                <Button variant="secondary" onClick={() => setOpen(false)}>
                   Close
-                </button>
+                </Button>
               </div>
             </div>
           </Transition.Child>

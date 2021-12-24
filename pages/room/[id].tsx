@@ -105,17 +105,11 @@ const Room: NextPage<RoomProps> = ({ user, roomData }) => {
             <h1 className="text-3xl font-bold font-heading text-gray-800">
               {room.name}
             </h1>
-            <Badge className="bg-green-100 text-green-800">{room.tag}</Badge>
+            <Badge>{room.tag}</Badge>
           </div>
           <div>
             {room.creatorId === user.id && (
-              <Button
-                type="button"
-                className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                onClick={() => setOpen(!open)}
-              >
-                Invite
-              </Button>
+              <Button onClick={() => setOpen(!open)}>Invite</Button>
             )}
           </div>
         </div>
@@ -142,8 +136,8 @@ const Room: NextPage<RoomProps> = ({ user, roomData }) => {
                     </a>
                     {!wish.santaId && wish.gifteeId !== user.id && (
                       <Button
-                        type="button"
-                        className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3"
+                        variant="secondary"
+                        className="mt-3 md:mt-0 md:ml-3"
                         onClick={() => becomeSanta(wish.id)}
                       >
                         Gift 🎁
@@ -151,8 +145,8 @@ const Room: NextPage<RoomProps> = ({ user, roomData }) => {
                     )}
                     {wish.santaId === user.id && (
                       <Button
-                        type="button"
-                        className="mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:ml-3 md:w-auto md:text-sm"
+                        variant="secondary"
+                        className="mt-3 md:mt-0 md:ml-3"
                         onClick={() => setModalOpen(true)}
                       >
                         See address
@@ -193,11 +187,7 @@ const Room: NextPage<RoomProps> = ({ user, roomData }) => {
                           {member.email}
                         </p>
                       </div>
-                      {member.id === room.creatorId && (
-                        <Badge className="bg-green-100 text-green-800">
-                          Admin
-                        </Badge>
-                      )}
+                      {member.id === room.creatorId && <Badge>Admin</Badge>}
                       {!member.isApproved && (
                         <Badge className="bg-red-100 text-red-800">
                           Pending

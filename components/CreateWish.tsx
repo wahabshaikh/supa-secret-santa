@@ -1,8 +1,15 @@
 import { useState } from "react";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import supabase from "../lib/supabase";
 import Button from "./Button";
 import Card from "./Card";
+import Input from "./Input";
+
+type Inputs = {
+  giftName: string;
+  giftUrl: string;
+};
 
 interface CreateWishProps {
   roomId: number;
@@ -10,74 +17,45 @@ interface CreateWishProps {
 }
 
 const CreateWish = ({ roomId, gifteeId }: CreateWishProps) => {
-  const [giftName, setGiftName] = useState("");
-  const [giftUrl, setGiftUrl] = useState("");
+  const methods = useForm<Inputs>();
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function createWish() {
+  const submitHandler: SubmitHandler<Inputs> = (data) => createWish(data);
+
+  async function createWish(data: Inputs) {
+    setIsLoading(true);
+
     const { error } = await supabase.from("Wish").insert({
       roomId,
-      giftName,
-      giftUrl,
+      ...data,
       gifteeId,
     });
 
     if (error) {
+      setIsLoading(false);
       toast.error(error.message);
       return;
     }
 
-    setGiftName("");
-    setGiftUrl("");
+    setIsLoading(false);
     toast.success("Successfully shared your wish");
   }
 
   return (
     <Card>
-      <h2>Make a wish</h2>
-      <form
-        className="mt-4 space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          createWish();
-        }}
-      >
-        <div className="w-full">
-          <label htmlFor="giftName" className="sr-only">
-            Gift Name
-          </label>
-          <input
-            type="text"
-            name="giftName"
-            id="giftName"
-            className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
-            placeholder="Gift Name"
-            required
-            value={giftName}
-            onChange={(event) => setGiftName(event.target.value)}
-          />
-        </div>
-        <div className="w-full">
-          <label htmlFor="giftUrl" className="sr-only">
-            Gift URL
-          </label>
-          <input
-            type="text"
-            name="giftUrl"
-            id="giftUrl"
-            className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full md:text-sm border-gray-300 rounded-md"
-            placeholder="Gift URL"
-            required
-            value={giftUrl}
-            onChange={(event) => setGiftUrl(event.target.value)}
-          />
-        </div>
-        <Button
-          type="submit"
-          className="mt-5 bg-green-600 hover:bg-green-700 focus:ring-green-500 md:mt-0 md:w-auto md:text-sm"
+      <h2 className="font-semibold text-xl">Make a wish ✨</h2>
+      <FormProvider {...methods}>
+        <form
+          className="mt-4 space-y-4"
+          onSubmit={methods.handleSubmit(submitHandler)}
         >
-          Share
-        </Button>
-      </form>
+          <Input label="Gift name" name="giftName" />
+          <Input label="Gift URL" name="giftUrl" />
+          <Button type="submit" variant="secondary" disabled={isLoading}>
+            Share
+          </Button>
+        </form>
+      </FormProvider>
     </Card>
   );
 };

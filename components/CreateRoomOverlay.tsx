@@ -1,10 +1,19 @@
-import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import { Room, Tag } from "@prisma/client";
-import toast from "react-hot-toast";
-import supabase from "../lib/supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
+import Button from "./Button";
+import Input from "./Input";
+import Select from "./Select";
+import supabase from "../lib/supabase";
+
+type Inputs = {
+  name: string;
+  tag: Tag;
+};
 
 interface CreateRoomOverlayProps {
   creatorId: string;
@@ -12,22 +21,22 @@ interface CreateRoomOverlayProps {
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
+const CreateRoomOverlay = ({
   creatorId,
   open,
   setOpen,
-}) => {
-  const [name, setName] = useState("");
-  const [tag, setTag] = useState<Tag>("FAMILY");
+}: CreateRoomOverlayProps) => {
+  const methods = useForm<Inputs>();
   const [isLoading, setIsLoading] = useState(false);
 
-  async function createRoom() {
-    setIsLoading(true);
-    if (isLoading) toast.loading("Creating a room...");
+  const submitHandler: SubmitHandler<Inputs> = (data) => createRoom(data);
 
-    const { data, error: createRoomError } = (await supabase
+  async function createRoom(data: Inputs) {
+    setIsLoading(true);
+
+    const { data: roomData, error: createRoomError } = (await supabase
       .from("Room")
-      .insert({ name, tag, creatorId })) as PostgrestResponse<Room>;
+      .insert({ creatorId, ...data })) as PostgrestResponse<Room>;
 
     if (createRoomError) {
       setIsLoading(false);
@@ -35,7 +44,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
       return;
     }
 
-    const roomId = data?.[0].id;
+    const roomId = roomData?.[0].id;
     const { error: insertUserInRoomError } = await supabase
       .from("UsersInRooms")
       .insert({
@@ -52,15 +61,7 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
     }
 
     setIsLoading(false);
-    setName("");
-    setTag("FAMILY");
     toast.success("Successfully created a room");
-
-    // await toast.promise(axios.post("/api/room", { creatorId, name, tag }), {
-    //   loading: "Creating a room...",
-    //   success: (response) => response.data.message,
-    //   error: (error) => error.toString(),
-    // });
   }
 
   return (
@@ -84,104 +85,67 @@ const CreateRoomOverlay: FC<CreateRoomOverlayProps> = ({
               leaveTo="translate-x-full"
             >
               <div className="w-screen max-w-md">
-                <form
-                  className="h-full divide-y divide-gray-200 flex flex-col bg-white shadow-xl"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    createRoom();
-                  }}
-                >
-                  <div className="flex-1 h-0 overflow-y-auto">
-                    <div className="py-6 px-4 bg-green-700 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <Dialog.Title className="text-lg font-medium text-white">
-                          New Room
-                        </Dialog.Title>
-                        <div className="ml-3 h-7 flex items-center">
-                          <button
-                            type="button"
-                            className="bg-green-700 rounded-md text-green-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-                            onClick={() => setOpen(false)}
-                          >
-                            <span className="sr-only">Close panel</span>
-                            <XIcon className="h-6 w-6" aria-hidden="true" />
-                          </button>
+                <FormProvider {...methods}>
+                  <form
+                    className="h-full divide-y divide-gray-200 flex flex-col bg-white shadow-xl"
+                    onSubmit={methods.handleSubmit(submitHandler)}
+                  >
+                    <div className="flex-1 h-0 overflow-y-auto">
+                      <div className="py-6 px-4 bg-green-700 sm:px-6">
+                        <div className="flex items-center justify-between">
+                          <Dialog.Title className="text-lg font-medium text-white">
+                            New Room
+                          </Dialog.Title>
+                          <div className="ml-3 h-7 flex items-center">
+                            <button
+                              type="button"
+                              className="bg-green-700 rounded-md text-green-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                              onClick={() => setOpen(false)}
+                            >
+                              <span className="sr-only">Close panel</span>
+                              <XIcon className="h-6 w-6" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-1">
+                          <p className="text-sm text-green-300">
+                            Get started by filling in the information below to
+                            create your new room.
+                          </p>
                         </div>
                       </div>
-                      <div className="mt-1">
-                        <p className="text-sm text-green-300">
-                          Get started by filling in the information below to
-                          create your new room.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div className="px-4 divide-y divide-gray-200 sm:px-6">
-                        <div className="space-y-6 pt-6 pb-5">
-                          <div>
-                            <label
-                              htmlFor="name"
-                              className="block text-sm font-medium text-gray-900"
-                            >
-                              Room name
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="name"
-                                id="name"
-                                className="block w-full shadow-sm sm:text-sm focus:ring-green-500 focus:border-green-500 border-gray-300 rounded-md"
-                                value={name}
-                                onChange={(event) =>
-                                  setName(event.target.value)
-                                }
-                                required
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div className="px-4 divide-y divide-gray-200 sm:px-6">
+                          <div className="space-y-6 pt-6 pb-5">
+                            <div>
+                              <Input label="Room name" name="name" />
+                            </div>
+                            <div>
+                              <Select
+                                label="Room tag"
+                                name="tag"
+                                options={["FAMILY", "FRIENDS", "COWORKERS"]}
                               />
                             </div>
                           </div>
-                          <div>
-                            <label
-                              htmlFor="tag"
-                              className="block text-sm font-medium text-gray-700"
-                            >
-                              Room tag
-                            </label>
-                            <div className="mt-1">
-                              <select
-                                id="tag"
-                                name="tag"
-                                className="block w-full sm:text-sm shadow-sm focus:ring-green-500 focus:border-green-500 border-gray-300 rounded-md"
-                                value={tag}
-                                onChange={(event) =>
-                                  setTag(event.target.value as Tag)
-                                }
-                              >
-                                <option value="FAMILY">Family</option>
-                                <option value="FRIENDS">Friends</option>
-                                <option value="COWORKERS">Coworkers</option>
-                              </select>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex-shrink-0 px-4 py-4 flex justify-end">
-                    <button
-                      type="button"
-                      className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      onClick={() => setOpen(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="ml-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </form>
+                    <div className="flex-shrink-0 px-4 py-4 flex justify-end">
+                      <Button variant="tertiary" onClick={() => setOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="secondary"
+                        className="ml-4"
+                        disabled={isLoading}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+                </FormProvider>
               </div>
             </Transition.Child>
           </div>

@@ -8,8 +8,8 @@ import prisma from "../lib/prisma";
 import supabase from "../lib/supabase";
 import countries from "../data/countries.json";
 import Button from "../components/Button";
-import axios from "axios";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 type Inputs = {
   avatarUrl: string;
@@ -28,18 +28,26 @@ interface IProfile {
 
 const Profile: NextPage<IProfile> = ({ profile }) => {
   const { id, email, ...defaultValues } = JSON.parse(profile) as User;
-  const methods = useForm<Inputs>({
-    defaultValues,
-  });
+  const methods = useForm<Inputs>({ defaultValues });
+  const [isLoading, setIsLoading] = useState(false);
 
   const submitHandler: SubmitHandler<Inputs> = (data) => createProfile(data);
 
   async function createProfile(data: Inputs) {
-    await toast.promise(axios.post("/api/profile", { id, email, ...data }), {
-      loading: "Creating your profile...",
-      success: (response) => response.data.message,
-      error: (error) => error.toString(),
-    });
+    setIsLoading(true);
+
+    const { error } = await supabase
+      .from("User")
+      .upsert({ id, email, ...data });
+
+    if (error) {
+      setIsLoading(false);
+      toast.error(error.message);
+      return;
+    }
+
+    setIsLoading(false);
+    toast.success(`Successfully updated profile`);
   }
 
   const firstName = methods.watch("firstName");
@@ -174,10 +182,7 @@ const Profile: NextPage<IProfile> = ({ profile }) => {
 
             <div className="pt-5">
               <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                >
+                <Button type="submit" disabled={isLoading}>
                   Save
                 </Button>
               </div>

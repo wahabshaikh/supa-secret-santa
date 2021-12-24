@@ -7,7 +7,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: string[];
 }
 
-const Select: FC<SelectProps> = ({ label, name, options, ...props }) => {
+const Select = ({ label, name, options, ...props }: SelectProps) => {
   const { register } = useFormContext();
 
   return (
