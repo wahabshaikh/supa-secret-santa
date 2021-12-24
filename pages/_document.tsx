@@ -1,31 +1,27 @@
 import Document, {
-  Html,
-  Head,
-  Main,
-  NextScript,
-  DocumentContext,
+    Html,
+    Head,
+    Main,
+    NextScript,
+    DocumentContext,
 } from "next/document";
-
 class MyDocument extends Document {
-  static async getInitialProps(ctx: DocumentContext) {
-    const initialProps = await Document.getInitialProps(ctx);
-    return { ...initialProps };
-  }
+    static async getInitialProps(ctx: DocumentContext) {
+        const initialProps = await Document.getInitialProps(ctx);
+        return { ...initialProps };
+    }
 
-  render() {
-    return (
-      <Html
-        lang="en"
-        className="h-full bg-[url('/assets/bg-pattern.svg')] bg-cover bg-red-100"
-      >
-        <Head />
-        <body className="h-full font-body">
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    );
-  }
+    render() {
+        return (
+            <Html lang="en" className="h-full bg-cover bg-blue">
+                <Head />
+                <body className="h-full font-body">
+                    <Main />
+                    <NextScript />
+                </body>
+            </Html>
+        );
+    }
 }
 
 export default MyDocument;
