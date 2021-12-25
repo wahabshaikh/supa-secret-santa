@@ -17,7 +17,9 @@ module.exports = {
                 shade: "#F66F63",
             },
             fontFamily: {
-                body: ["Poppins"],
+                // body: ["Poppins"],
+                heading: ["Berkshire Swash", "cursive"],
+                body: ["Happy Monkey", "cursive"],
             },
         },
     },

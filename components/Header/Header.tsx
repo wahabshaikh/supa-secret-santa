@@ -34,8 +34,8 @@ export default function Example() {
                             <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
                                 <div className="flex-shrink-0 flex items-center">
                                     <div className="h-8 w-auto">
-                                        <h1 className="font-extrabold text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395]">
-                                            Supa Santa
+                                        <h1 className="font-extrabold text-2xl font-heading text-transparent bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395]">
+                                            Supa Secret Santa
                                         </h1>
                                     </div>
                                 </div>
@@ -45,7 +45,7 @@ export default function Example() {
                                 {/* Profile dropdown */}
                                 <Menu as="div" className="ml-3 relative">
                                     <div>
-                                        <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                                        {/* <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
                                             <span className="sr-only">
                                                 Open user menu
                                             </span>
@@ -54,7 +54,7 @@ export default function Example() {
                                                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                                                 alt=""
                                             />
-                                        </Menu.Button>
+                                        </Menu.Button> */}
                                     </div>
                                     <Transition
                                         as={Fragment}
