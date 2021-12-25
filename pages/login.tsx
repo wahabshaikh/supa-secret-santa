@@ -1,11 +1,17 @@
 import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
+import Image from "next/image";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Button from "../components/Button";
+import Card from "../components/Card";
 import supabase from "../lib/supabase";
 
 const Login: NextPage = () => {
+  const router = useRouter();
+  const user = supabase.auth.user();
+
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -40,25 +46,36 @@ const Login: NextPage = () => {
     }
   }
 
+  if (user) {
+    router.push("/dashboard");
+    return null;
+  }
+
   return (
     <>
       <Head>
         <title>Login | Supa Secret Santa</title>
       </Head>
       <main className="min-h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-center text-9xl">🎅</h1>
-        <div className="mt-8 max-w-md w-full space-y-8 bg-white px-4 py-5 md:p-6 rounded-md shadow-sm">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Sign in to your account
-            </h2>
-          </div>
+        <Image
+          height={128}
+          width={128}
+          src="/logo.png"
+          alt="Supa Secret Santa"
+        />
+
+        <Card className="max-w-md w-full">
+          <h2 className="text-3xl font-semibold text-gray-900 text-center">
+            Sign in to your account
+          </h2>
 
           {isSubmitted ? (
-            <p className="text-center">Please check your email to sign in</p>
+            <p className="mt-4 text-center">
+              Please check your email to sign in
+            </p>
           ) : (
             <form
-              className="mt-8 space-y-6"
+              className="mt-8"
               onSubmit={(event) => {
                 event.preventDefault();
                 signIn();
@@ -85,7 +102,7 @@ const Login: NextPage = () => {
               <div>
                 <Button
                   type="submit"
-                  className="w-full bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                  className="w-full mt-4"
                   disabled={isSubmitting}
                 >
                   Sign in
@@ -93,7 +110,7 @@ const Login: NextPage = () => {
               </div>
             </form>
           )}
-        </div>
+        </Card>
       </main>
     </>
   );

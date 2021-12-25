@@ -1,4 +1,4 @@
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Dialog, Transition } from "@headlessui/react";
@@ -28,6 +28,15 @@ const CreateRoomOverlay = ({
 }: CreateRoomOverlayProps) => {
   const methods = useForm<Inputs>();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let toastId: string | undefined;
+    if (isLoading) {
+      toastId = toast.loading("Creating a room...");
+    }
+
+    return () => toast.remove(toastId);
+  }, [isLoading]);
 
   const submitHandler: SubmitHandler<Inputs> = (data) => createRoom(data);
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import supabase from "../lib/supabase";
@@ -19,6 +19,15 @@ interface CreateWishProps {
 const CreateWish = ({ roomId, gifteeId }: CreateWishProps) => {
   const methods = useForm<Inputs>();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let toastId: string | undefined;
+    if (isLoading) {
+      toastId = toast.loading("Sharing your wish...");
+    }
+
+    return () => toast.remove(toastId);
+  }, [isLoading]);
 
   const submitHandler: SubmitHandler<Inputs> = (data) => createWish(data);
 
@@ -49,8 +58,14 @@ const CreateWish = ({ roomId, gifteeId }: CreateWishProps) => {
           className="mt-4 space-y-4"
           onSubmit={methods.handleSubmit(submitHandler)}
         >
-          <Input label="Gift name" name="giftName" />
-          <Input label="Gift URL" name="giftUrl" />
+          <div>
+            <Input label="Gift name" name="giftName" />
+          </div>
+
+          <div>
+            <Input label="Gift URL" name="giftUrl" />
+          </div>
+
           <Button type="submit" variant="secondary" disabled={isLoading}>
             Share
           </Button>

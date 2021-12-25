@@ -1,4 +1,4 @@
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Dialog, Transition } from "@headlessui/react";
@@ -25,6 +25,15 @@ const InviteMemberOverlay = ({
 }: InviteMemberOverlayProps) => {
   const methods = useForm<Inputs>();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let toastId: string | undefined;
+    if (isLoading) {
+      toastId = toast.loading(`Inviting member to the room...`);
+    }
+
+    return () => toast.remove(toastId);
+  }, [isLoading]);
 
   const submitHandler: SubmitHandler<Inputs> = (data) => inviteMember(data);
 
@@ -111,8 +120,7 @@ const InviteMemberOverlay = ({
                         </div>
                         <div className="mt-1">
                           <p className="text-sm text-green-300">
-                            Get started by filling in the information below to
-                            invite a member to your room. Make sure they are
+                            Invite a member to your room. Make sure they are
                             signed up to receive an invitation.
                           </p>
                         </div>
