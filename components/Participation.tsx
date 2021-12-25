@@ -6,17 +6,46 @@ import Invite from "../assets/Invite.svg";
 import Wish from "../assets/Wish.svg";
 import Gift from "../assets/Gift.svg";
 const data = [
-    { title: "Sign up", image: Signup },
-    { title: "Create a room", image: Room },
-    { title: "Invite members", image: Invite },
-    { title: "Share your wish", image: Wish },
-    { title: "Receive gift", image: Gift },
-    { title: "Sign out", image: Room },
+    {
+        title: "Sign up",
+        image: Signup,
+        description:
+            "Sign up your email and fill the profile information. It is required to use the application",
+    },
+    {
+        title: "Create a room",
+        image: Room,
+        description:
+            "Create a room for your family, friends or coworkers. It creates a safe environment and ensures unknown people cannot see your shipping address. ",
+    },
+    {
+        title: "Invite members",
+        image: Invite,
+        description:
+            "Invite members to the room using their email address. Make sure they are already signed up and filled their profile in order to receive an invitation.",
+    },
+    {
+        title: "Share your wish",
+        image: Wish,
+        description:
+            "Wish your loved ones a gift. Share your wish with your friends and family. You can also share your wish with your coworkers.",
+    },
+    {
+        title: "Receive gift",
+        image: Gift,
+        description:
+            "Receive gift from your loved ones. You can also receive gift from your friends and family.",
+    },
+    {
+        title: "Sign out",
+        image: Room,
+        description: "L",
+    },
 ];
 const Participation = () => {
     return (
         <div className="max-w-7xl m-auto pb-20  px-2 sm:px-6 lg:px-8 ">
-            <h1 className="font-extrabold text-center text-transparent text-2xl bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395]">
+            <h1 className="font-extrabold font-heading text-center text-transparent text-2xl bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395]">
                 Share gifts to your loved ones
             </h1>
             <div className="text-white  my-10 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -37,10 +66,8 @@ const Participation = () => {
                             <div className="font-bold text-center mb-2">
                                 {i.title}
                             </div>
-                            <p className="text-gray-700 text-center text-base">
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipisicing elit. Voluptatibus quia, nulla!
-                                Maiores et perferendis eaque, exercitationem
+                            <p className="text-center text-transparent text-2xl bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395] text-center text-base">
+                                {i.description}
                             </p>
                         </div>
                     </div>

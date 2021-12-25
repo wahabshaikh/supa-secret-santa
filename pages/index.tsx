@@ -4,7 +4,6 @@ import Link from "next/link";
 import Header from "../components/Header/Header";
 import HeroContainer from "../components/HeroContainer";
 import Participation from "../components/Participation";
-import Snowfall from "react-snowfall";
 
 const Home: NextPage = () => {
     return (
@@ -20,17 +19,30 @@ const Home: NextPage = () => {
                     href="favicon.ico"
                     type="image/x-icon"
                 />
-                <Snowfall
-                    // Changes the snowflake color
-                    color="white"
-                    // Applied to the canvas element
-                    // Controls the number of snowflakes that are created (default 150)
-                    snowflakeCount={200}
-                />
             </Head>
             <Header />
             <HeroContainer />
             <Participation />
+            <div className="text-white text-center pb-10">
+                Made with ❤ by{" "}
+                <a
+                    className="mx-1 font-bold text-transparent  bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395]"
+                    href="https://twitter.com/wahabshaikh_"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Wahab
+                </a>
+                and
+                <a
+                    className="mx-1 font-bold text-transparent  bg-clip-text bg-gradient-to-r from-[#F96F65] via-[#F66F63] to-[#FD5395]"
+                    href="https://twitter.com/KROTUS8"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Ketan
+                </a>
+            </div>
         </>
     );
 };
