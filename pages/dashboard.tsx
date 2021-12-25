@@ -69,7 +69,6 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
       <Head>
         <title>Dashboard | Supa Secret Santa</title>
       </Head>
-
       <div className="bg-white overflow-hidden shadow rounded-lg">
         <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
