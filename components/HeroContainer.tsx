@@ -19,10 +19,10 @@ function HeroContainer() {
                     <div className="my-10">
                         <p className="text-white text-center lg:text-left ">
                             With the spirit of the holiday season, we bring to
-                            you a Supabase powered
+                            you an opportunity to be
                         </p>
                         <p className="text-white text-center lg:text-left">
-                            platform to be a Secret Santa for your loved ones,
+                            a Secret Santa (with a twist) for your loved ones,
                             online.
                         </p>
                     </div>

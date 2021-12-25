@@ -13,7 +13,7 @@ class MyDocument extends Document {
 
     render() {
         return (
-            <Html lang="en" className="h-full bg-cover bg-blue">
+            <Html lang="en" className="h-full bg-red-100">
                 <Head />
                 <body className="h-full font-body">
                     <Main />

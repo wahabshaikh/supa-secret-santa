@@ -5,41 +5,44 @@ import Signup from "../assets/Signup.svg";
 import Invite from "../assets/Invite.svg";
 import Wish from "../assets/Wish.svg";
 import Gift from "../assets/Gift.svg";
+import Enjoy from "../assets/Enjoy.svg";
+
 const data = [
     {
         title: "Sign up",
         image: Signup,
         description:
-            "Sign up your email and fill the profile information. It is required to use the application",
+            "Sign up your email address and fill out the profile information. It is required to proceed ahead with the game.",
     },
     {
         title: "Create a room",
         image: Room,
         description:
-            "Create a room for your family, friends or coworkers. It creates a safe environment and ensures unknown people cannot see your shipping address. ",
+            "Create a room for your family, friends or coworkers. It creates a safe environment and ensures unintended people cannot access your shipping address.",
     },
     {
         title: "Invite members",
         image: Invite,
         description:
-            "Invite members to the room using their email address. Make sure they are already signed up and filled their profile in order to receive an invitation.",
+            "Invite members to the room using their email address. Make sure they are already signed up and have filled their profile information in order to receive an invitation.",
     },
     {
         title: "Share your wish",
         image: Wish,
         description:
-            " Share your wish with your loved ones. Include the gift's name and url and wait till someone becomes your Secret Santa.",
+            "Share your wish with your loved ones. Include the gift's name and an URL so that others can see the information.",
     },
     {
-        title: "Send and Receive gift",
+        title: "Send and receive gift",
         image: Gift,
         description:
-            "There's as much joy in giving as receiving. So, see through the list of wishes and become someone's Secret Santa, while you wait for your gift.",
+            "There's as much joy in giving, as in receiving. So, see through the list of wishes and become someone's Secret Santa, while you wait for yours.",
     },
     {
-        title: "Enjoy your gift",
-        image: Room,
-        description: " Enjoy after receiving your gifts ",
+        title: "Enjoy",
+        image: Enjoy,
+        description:
+            "Enjoy... that's what Supa Secret Santa is built for. Create more rooms, invite more members, exchange more gifts.",
     },
 ];
 const Participation = () => {

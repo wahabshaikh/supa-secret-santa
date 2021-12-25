@@ -7,7 +7,7 @@ import classNames from "classnames/bind";
 
 export default function Example() {
     return (
-        <Disclosure as="nav" className="bg-blue text-black mt-2">
+        <Disclosure as="nav" className="bg-blue text-black">
             {({ open }) => (
                 <>
                     <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
