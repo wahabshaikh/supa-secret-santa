@@ -51,7 +51,7 @@ const CreateWish = ({ roomId, gifteeId }: CreateWishProps) => {
   }
 
   return (
-    <Card>
+    <Card className="mb-4">
       <h2 className="font-semibold text-xl">Make a wish ✨</h2>
       <FormProvider {...methods}>
         <form

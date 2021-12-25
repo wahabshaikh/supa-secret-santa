@@ -74,9 +74,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
         <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h2 className="text-3xl leading-6 font-heading text-gray-900">
-                Rooms
-              </h2>
+              <h2 className="text-3xl font-semibold">Rooms</h2>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               <Button onClick={() => setOpen(!open)}>

@@ -1,27 +1,30 @@
-import { Dispatch, FC, Fragment, SetStateAction, useState } from "react";
+import { User as Profile } from "@prisma/client";
+import { Dispatch, FC, Fragment, SetStateAction } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { GiftIcon } from "@heroicons/react/solid";
 import ReactConfetti from "react-confetti";
-import Button from "./Button";
 
-interface ShippingAddressModalProps {
+interface GifteeModalProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  address: {
-    street: string | undefined;
-    city: string | undefined;
-    region: string | undefined;
-    country: string | undefined;
-    postalCode: string | undefined;
-  };
+  giftee: Profile & { isApproved: boolean; giftName: string; giftUrl: string };
 }
 
-const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
-  open,
-  setOpen,
-  address,
-}) => {
-  const { street, city, region, country, postalCode } = address;
+const GifteeModal: FC<GifteeModalProps> = ({ open, setOpen, giftee }) => {
+  const {
+    avatarUrl,
+    firstName,
+    lastName,
+    email,
+    street,
+    city,
+    region,
+    country,
+    postalCode,
+    giftName,
+    giftUrl,
+  } = giftee;
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -30,7 +33,11 @@ const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
         onClose={setOpen}
       >
         <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <ReactConfetti />
+          <ReactConfetti
+            numberOfPieces={1000}
+            recycle={false}
+            tweenDuration={10000}
+          />
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -59,7 +66,7 @@ const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6">
               <div>
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
                   <GiftIcon
@@ -68,23 +75,38 @@ const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
                   />
                 </div>
                 <div className="mt-3 text-center sm:mt-5">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg leading-6 font-medium text-gray-900"
-                  >
-                    Shipping Address
+                  <Dialog.Title as="h3" className="text-center text-gray-900">
+                    <span className="text-gray-600">
+                      Hooray! You are a Secret Santa for
+                    </span>
+                    <br />
+                    <img
+                      className="mt-4 inline-block h-14 w-14 rounded-md"
+                      src={avatarUrl}
+                      alt={firstName}
+                    />
+                    <span className="block text-xl font-semibold">
+                      {`${firstName} ${lastName}`}
+                    </span>
+                    ({email})
                   </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      {`${street}, ${city}, ${region}, ${country}, ${postalCode}`}
-                    </p>
-                  </div>
+                  <Dialog.Description
+                    as="p"
+                    className="mt-4 text-sm text-gray-600"
+                  >
+                    {`${street}, ${city}, ${region}, ${country}, ${postalCode}`}
+                  </Dialog.Description>
                 </div>
               </div>
               <div className="mt-5 sm:mt-6">
-                <Button variant="secondary" onClick={() => setOpen(false)}>
-                  Close
-                </Button>
+                <a
+                  href={giftUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm"
+                >
+                  Checkout {giftName}
+                </a>
               </div>
             </div>
           </Transition.Child>
@@ -94,4 +116,4 @@ const ShippingAddressModal: FC<ShippingAddressModalProps> = ({
   );
 };
 
-export default ShippingAddressModal;
+export default GifteeModal;
