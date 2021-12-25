@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { FC, InputHTMLAttributes } from "react";
+import { InputHTMLAttributes } from "react";
 import { useFormContext } from "react-hook-form";
 import { ExclamationCircleIcon } from "@heroicons/react/solid";
 
@@ -8,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
 }
 
-const Input: FC<InputProps> = ({ label, name, ...props }) => {
+const Input = ({ label, name, ...props }: InputProps) => {
   const {
     register,
     formState: { errors },

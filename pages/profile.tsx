@@ -1,15 +1,16 @@
 import { User } from "@prisma/client";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
+import { useEffect, useState } from "react";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
+import toast from "react-hot-toast";
+import Button from "../components/Button";
+import Card from "../components/Card";
 import Input from "../components/Input";
 import Select from "../components/Select";
 import prisma from "../lib/prisma";
 import supabase from "../lib/supabase";
 import countries from "../data/countries.json";
-import Button from "../components/Button";
-import axios from "axios";
-import toast from "react-hot-toast";
 
 type Inputs = {
   avatarUrl: string;
@@ -28,18 +29,36 @@ interface IProfile {
 
 const Profile: NextPage<IProfile> = ({ profile }) => {
   const { id, email, ...defaultValues } = JSON.parse(profile) as User;
-  const methods = useForm<Inputs>({
-    defaultValues,
-  });
+
+  const methods = useForm<Inputs>({ defaultValues });
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let toastId: string | undefined;
+    if (isLoading) {
+      toastId = toast.loading("Updating profile...");
+    }
+
+    return () => toast.remove(toastId);
+  }, [isLoading]);
 
   const submitHandler: SubmitHandler<Inputs> = (data) => createProfile(data);
 
   async function createProfile(data: Inputs) {
-    await toast.promise(axios.post("/api/profile", { id, email, ...data }), {
-      loading: "Creating your profile...",
-      success: (response) => response.data.message,
-      error: (error) => error.toString(),
-    });
+    setIsLoading(true);
+
+    const { error } = await supabase
+      .from("User")
+      .upsert({ id, email, ...data, updatedAt: new Date().toISOString() });
+
+    if (error) {
+      setIsLoading(false);
+      toast.error(error.message);
+      return;
+    }
+
+    setIsLoading(false);
+    toast.success(`Successfully updated profile`);
   }
 
   const firstName = methods.watch("firstName");
@@ -51,7 +70,7 @@ const Profile: NextPage<IProfile> = ({ profile }) => {
         <title>Profile | Supa Secret Santa</title>
       </Head>
 
-      <div className="max-w-3xl mx-auto px-4 py-5 md:p-6 bg-white rounded-md shadow-sm">
+      <Card className="max-w-3xl mx-auto">
         <FormProvider {...methods}>
           <form
             className="space-y-8 divide-y divide-gray-200"
@@ -123,7 +142,8 @@ const Profile: NextPage<IProfile> = ({ profile }) => {
                     Shipping Address
                   </h2>
                   <p className="mt-1 text-sm text-gray-500">
-                    Use a permanent address where you can receive the gift.
+                    Use a permanent address where you can receive the gift. This
+                    information will only be displayed to your Secret Santa.
                   </p>
                 </div>
 
@@ -174,17 +194,14 @@ const Profile: NextPage<IProfile> = ({ profile }) => {
 
             <div className="pt-5">
               <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                >
+                <Button type="submit" disabled={isLoading}>
                   Save
                 </Button>
               </div>
             </div>
           </form>
         </FormProvider>
-      </div>
+      </Card>
     </>
   );
 };

@@ -13,7 +13,7 @@ datasource db {
 model User {
   id           String         @id @default(uuid())
   createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  updatedAt    DateTime?      @updatedAt
   avatarUrl    String
   firstName    String
   lastName     String
@@ -41,13 +41,13 @@ model Room {
 }
 
 model UsersInRooms {
-  user       User     @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
   userId     String
-  room       Room     @relation(fields: [roomId], references: [id])
+  room       Room      @relation(fields: [roomId], references: [id])
   roomId     Int
-  isApproved Boolean  @default(false)
-  invitedAt  DateTime @default(now())
-  joinedAt   DateTime @updatedAt
+  isApproved Boolean   @default(false)
+  invitedAt  DateTime  @default(now())
+  joinedAt   DateTime? @updatedAt
 
   @@id([userId, roomId])
 }

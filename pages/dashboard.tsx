@@ -25,38 +25,34 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
   const [rooms, setRooms] = useState<(Room & { isApproved: boolean })[]>([]);
 
   useEffect(() => {
+    async function fetchRooms() {
+      const { data, error } = (await supabase
+        .from("UsersInRooms")
+        .select("isApproved, Room(*)")
+        .filter("userId", "eq", user.id)) as PostgrestResponse<{
+        isApproved: boolean;
+        Room: Room;
+      }>;
+
+      if (error) toast.error(error.message);
+
+      const rooms = data?.map(({ isApproved, Room }) => ({
+        isApproved,
+        ...Room,
+      }));
+
+      setRooms(rooms || []);
+    }
+
     fetchRooms();
 
-    const mySubscription = supabase
-      .from("*")
-      .on("*", () => {
-        fetchRooms();
-      })
-      .subscribe();
+    // Fetch rooms in realtime
+    const subscription = supabase.from("*").on("*", fetchRooms).subscribe();
 
     return () => {
-      supabase.removeSubscription(mySubscription);
+      supabase.removeSubscription(subscription);
     };
-  }, []);
-
-  async function fetchRooms() {
-    const { data, error } = (await supabase
-      .from("UsersInRooms")
-      .select("isApproved, Room(*)")
-      .filter("userId", "eq", user.id)) as PostgrestResponse<{
-      isApproved: boolean;
-      Room: Room;
-    }>;
-
-    if (error) toast.error(error.message);
-
-    const rooms = data?.map(({ isApproved, Room }) => ({
-      isApproved,
-      ...Room,
-    }));
-
-    setRooms(rooms || []);
-  }
+  }, [user.id]);
 
   async function acceptInvitation(roomId: number, userId: string) {
     const { error } = await supabase
@@ -77,16 +73,10 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
         <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h2 className="text-3xl leading-6 font-heading text-gray-900">
-                Rooms
-              </h2>
+              <h2 className="text-3xl font-semibold">Rooms</h2>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              <Button
-                type="button"
-                className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                onClick={() => setOpen(!open)}
-              >
+              <Button onClick={() => setOpen(!open)}>
                 <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
                 Create Room
               </Button>
@@ -126,11 +116,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
                       </div>
                       <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
                         {/* Creator badge */}
-                        {room.creatorId === user.id && (
-                          <Badge colors="bg-green-100 text-green-800">
-                            Creator
-                          </Badge>
-                        )}
+                        {room.creatorId === user.id && <Badge>Creator</Badge>}
                         {/* Accept invitation button */}
                         {!room.isApproved && (
                           <button
@@ -163,7 +149,7 @@ const Dashboard: NextPage<IDashboard> = ({ user }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  // Redirect unautheticated user to login
+  // Redirect unautheticated user to login page
   const { user } = await supabase.auth.api.getUserByCookie(req);
   if (!user) {
     return { redirect: { destination: "/login", permanent: false } };
