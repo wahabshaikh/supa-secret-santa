@@ -28,18 +28,18 @@ const data = [
         title: "Share your wish",
         image: Wish,
         description:
-            "Wish your loved ones a gift. Share your wish with your friends and family. You can also share your wish with your coworkers.",
+            " Share your wish with your loved ones. Include the gift's name and url and wait till someone becomes your Secret Santa.",
     },
     {
-        title: "Receive gift",
+        title: "Send and Receive gift",
         image: Gift,
         description:
-            "Receive gift from your loved ones. You can also receive gift from your friends and family.",
+            "There's as much joy in giving as receiving. So, see through the list of wishes and become someone's Secret Santa, while you wait for your gift.",
     },
     {
-        title: "Sign out",
+        title: "Enjoy your gift",
         image: Room,
-        description: "L",
+        description: " Enjoy after receiving your gifts ",
     },
 ];
 const Participation = () => {
